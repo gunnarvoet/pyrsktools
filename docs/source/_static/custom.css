@@ -1,0 +1,14 @@
+div.document {
+    margin: 30px 5% 0px 5%;
+}
+
+div.sphinxsidebar {
+    max-height: 100%;
+    overflow-y: auto;
+    margin-bottom: 400px;
+}
+
+div.sphinxsidebar input {
+    width: 160px;
+    margin-bottom: 50px;
+}

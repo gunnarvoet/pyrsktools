@@ -1,0 +1,34 @@
+image: python:3.8.0
+
+pipelines:
+    branches:
+        '{master,develop,release*}':
+            - parallel:
+                - step:
+                    name: Format check
+                    caches:
+                        - pip
+                    script:
+                        - pip install black
+                        - make format-check
+                - step:
+                    name: Type check
+                    caches:
+                        - pip
+                    script:
+                        - pip install .
+                        - pip install mypy
+                        - make type-check
+                - step:
+                    name: Unit test
+                    caches:
+                        - pip
+                        - rsks
+                    script:
+                        - apt -y update && apt install -y git-lfs
+                        - pip install .
+                        - make test
+
+definitions:
+  caches:
+    rsks: tests/rsks/

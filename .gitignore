@@ -1,0 +1,22 @@
+# general things to ignore
+.vscode
+build/
+dist/
+env/
+html/
+*.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
+*.rsk
+rsks/
+playground/
+/run.py
+!sample.rsk
+
+# due to using tox and pytest
+.tox
+.cache
+.DS_Store
