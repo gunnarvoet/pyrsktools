@@ -540,6 +540,12 @@ class RegionCast(Region):
     def __str__(self: RegionCast) -> str:
         return f"{self.regionType}{self.type} [{self.tstamp1}, {self.tstamp2}]"
 
+    def isdowncast(self: RegionCast) -> bool:
+        return True if self.regionType == "DOWN" else False
+
+    def isupcast(self: RegionCast) -> bool:
+        return True if self.regionType == "UP" else False
+
 
 @dataclass(frozen=True)
 class RegionProfile(Region):

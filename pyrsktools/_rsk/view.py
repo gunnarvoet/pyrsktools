@@ -56,7 +56,14 @@ def _addCastPatches(
     for i in range(len(channelNames)):
         cmax = 1.01 * np.max(data[channelNames[i]])
         cmin = 1.01 * np.min(data[channelNames[i]])
-        for downcast, upcast, _ in profileRegions:
+        for firstcast, secondcast, _ in profileRegions:
+            if firstcast.isdowncast():
+                downcast = firstcast
+                upcast = secondcast
+            else:
+                downcast = secondcast
+                upcast = firstcast
+
             start, end = mdates.date2num(downcast.tstamp1), mdates.date2num(downcast.tstamp2)
             axes[i].add_patch(
                 mpatches.Rectangle(
@@ -143,7 +150,7 @@ def plotdata(
     if not self.getregionsbytypes([RegionCast, RegionProfile]):
         data = self.data
     else:
-        # List of tuples: (RegionCast<DOWNCAST>,  RegionCast<UPCAST>, RegionProfile)
+        # List of tuples: (RegionCast, RegionCast, RegionProfile)
         profileRegions = self.getprofilesorerror()
 
         if profile is not None:

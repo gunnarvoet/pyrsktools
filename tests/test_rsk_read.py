@@ -251,24 +251,23 @@ class TestRead(unittest.TestCase):
                 rsk.getprofilesindices(profiles=15)
 
             # Ya, ya...inefficient
-            rP = [region for region in rsk.regions if type(region) in [RegionCast, RegionProfile]]
-            profiles: List[Tuple[RegionCast, RegionCast, RegionProfile]] = [
-                rP[i : i + 3]
-                for i in range(0, len(rP), 3)
-                if isinstance(rP[i], RegionCast)
-                and isinstance(rP[i + 1], RegionCast)
-                and isinstance(rP[i + 2], RegionProfile)
-            ]
+            profiles = rsk.getprofilesorerror()
             self.assertEqual(len(profiles), len(both))
+            if len(profiles) > 0:
+                if profiles[0][0].isdowncast():
+                    downIndex, upIndex = 0, 1
+                else:
+                    upIndex, downIndex = 0, 1
+
             # Go through each profile index list and check that the
             # first and last index actually match the profile start and end times.
             for i in range(len(both)):
                 self.assertEqual(rsk.data["timestamp"][both[i][0]], profiles[i][2].tstamp1)
                 self.assertEqual(rsk.data["timestamp"][both[i][-1]], profiles[i][2].tstamp2)
-                self.assertEqual(rsk.data["timestamp"][up[i][0]], profiles[i][1].tstamp1)
-                self.assertEqual(rsk.data["timestamp"][up[i][-1]], profiles[i][1].tstamp2)
-                self.assertEqual(rsk.data["timestamp"][down[i][0]], profiles[i][0].tstamp1)
-                self.assertEqual(rsk.data["timestamp"][down[i][-1]], profiles[i][0].tstamp2)
+                self.assertEqual(rsk.data["timestamp"][up[i][0]], profiles[i][upIndex].tstamp1)
+                self.assertEqual(rsk.data["timestamp"][up[i][-1]], profiles[i][upIndex].tstamp2)
+                self.assertEqual(rsk.data["timestamp"][down[i][0]], profiles[i][downIndex].tstamp1)
+                self.assertEqual(rsk.data["timestamp"][down[i][-1]], profiles[i][downIndex].tstamp2)
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:

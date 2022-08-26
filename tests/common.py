@@ -152,11 +152,17 @@ def getProfileData(
 
     # Iterate the length of mRSK data, but increment by two so we
     # compare both up and down at the same time.
+    mDownIsFirst = mRSK["data"][0]["direction"] == "down"
     for i in range(0, len(mRSK["data"]), 2):
+        if mDownIsFirst:
+            mDownIndex, mUpIndex = i, i + 1
+        else:
+            mUpIndex, mDownIndex = i, i + 1
+
         # mRSKtools down profile
-        mDownData = np.array(mRSK["data"][i]["values"])
+        mDownData = np.array(mRSK["data"][mDownIndex]["values"])
         # mRSKtools up profile
-        mUpData = np.array(mRSK["data"][i + 1]["values"])
+        mUpData = np.array(mRSK["data"][mUpIndex]["values"])
         # pyRSKtools down profile
         pyDownData = pyRSK.data[downIndices[i // 2]]
         # pyRSKtools up profile

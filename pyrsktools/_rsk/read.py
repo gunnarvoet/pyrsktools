@@ -512,19 +512,19 @@ def getprofilesindices(
 
     # The way the profiles are selected below is a bit odd, sorry.
     # The above profileRegions retrieved above is a tuple of
-    # (DowncastRegion, UpcastRegion, ProfileRegion), each of
+    # (RegionCast, RegionCast, RegionProfile), each of
     # which have tstamp1 and tstamp2 marking their start and end
     # respectively. However, when the user specifies "both" we
-    # get into a weird case where the last point of the downcast
-    # and the first point of the upcast are the same (and we want to
-    # count them both). So, for "both" we use the downcast and upcast
+    # get into a weird case where the last point of the first cast
+    # and the first point of the second cast are the same (and we want to
+    # count them both). So, for "both" we use the individual cast
     # regions instead of the profile region to make sure we double count.
     # Below I just encode the direction into an int so it might be
     # quicker to compare later.
     if direction == "down":
-        regionIndex = 0
+        regionIndex = 0 if profileRegions[0][0].isdowncast() else 1
     elif direction == "up":
-        regionIndex = 1
+        regionIndex = 1 if profileRegions[0][1].isupcast() else 0
     else:
         regionIndex = 2
 
