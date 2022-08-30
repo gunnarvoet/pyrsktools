@@ -26,10 +26,10 @@ For information on how to clone, install, and edit the source code directly, ple
 
 .. _Python 3.8: https://www.python.org/downloads/
 .. _pip: https://pip.pypa.io/en/stable/
-.. _TEOS-10 GSW: https://github.com/TEOS-10/GSW-Python>
+.. _TEOS-10 GSW: https://github.com/TEOS-10/GSW-Python
 .. _RBR website: https://rbr-global.com/products/software
 .. _getting started: guides/getting-started-guide.html
-.. _API reference: rsk.html
+.. _API reference: api-overview.html
 .. _Bitbucket repository: https://bitbucket.org/rbr/pyrsktools
 .. _contributors guide: contributing.html
 .. _Microsoft Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/
