@@ -1,34 +1,44 @@
 image: python:3.8.0
 
+definitions:
+    steps:
+        - step: &formatCheck
+            name: Format check
+            caches:
+                - pip
+            script:
+                - pip install black
+                - make format-check
+        - step: &typeCheck
+            name: Type check
+            caches:
+                - pip
+            script:
+                - pip install .
+                - pip install mypy
+                - make type-check
+        - step: &unitTest
+            name: Unit test
+            caches:
+                - pip
+                - rsks
+            script:
+                - apt -y update && apt install -y git-lfs
+                - pip install .
+                - make test
+    caches:
+        rsks: tests/rsks/
+
 pipelines:
     branches:
-        '{master,develop,release*}':
+        master:
             - parallel:
-                - step:
-                    name: Format check
-                    caches:
-                        - pip
-                    script:
-                        - pip install black
-                        - make format-check
-                - step:
-                    name: Type check
-                    caches:
-                        - pip
-                    script:
-                        - pip install .
-                        - pip install mypy
-                        - make type-check
-                - step:
-                    name: Unit test
-                    caches:
-                        - pip
-                        - rsks
-                    script:
-                        - apt -y update && apt install -y git-lfs
-                        - pip install .
-                        - make test
-
-definitions:
-  caches:
-    rsks: tests/rsks/
+                - step: *formatCheck
+                - step: *typeCheck
+                - step: *unitTest
+    pull-requests:
+        '**':
+            - parallel:
+                - step: *formatCheck
+                - step: *typeCheck
+                - step: *unitTest
