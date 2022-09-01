@@ -12,7 +12,7 @@ from pyrsktools.datatypes import *
 from pyrsktools.channels import *
 from common import RSK_FILES, GOLDEN_RSK, GOLDEN_RSK_TYPE, GOLDEN_RSK_VERSION
 from common import CSV_FILES, GOLDEN_CSV
-from common import MATLAB_RSK
+from common import MATLAB_RSK, APT_CERVELLO_RSK
 from common import readMatlabFile, Timer, getProfileData
 
 GOLDEN_RSK_CHANNEL_INFO = [
@@ -56,8 +56,8 @@ class TestRead(unittest.TestCase):
         self.assertEqual(rsk.instrument.firmwareType, 104)
         self.assertEqual(rsk.instrument.partNumber, None)  # Part number doesn't exist for 2.0.0
         # Deployment
-        self.assertEqual(rsk.deployment.deploymentID, 1)
-        self.assertEqual(rsk.deployment.instrumentID, 1)
+        self.assertIsNotNone(rsk.deployment.deploymentID)
+        self.assertIsNotNone(rsk.deployment.instrumentID)
         self.assertEqual(rsk.deployment.timeOfDownload, utils.rsktime2datetime(1603763961894))
         # Channels
         self.assertEqual(len(rsk.channels), 18)
@@ -66,19 +66,19 @@ class TestRead(unittest.TestCase):
             self.assertEqual(channel.longName, longName)
             self.assertEqual(channel.units, units)
         # Epoch
-        self.assertEqual(rsk.epoch.deploymentID, 1)
+        self.assertIsNotNone(rsk.epoch.deploymentID)
         self.assertEqual(rsk.epoch.startTime, utils.rsktime2datetime(946684800000))
         self.assertEqual(rsk.epoch.endTime, utils.rsktime2datetime(4102358400000))
         # Schedule
         self.assertEqual(rsk.schedule.scheduleID, 1)
-        self.assertEqual(rsk.schedule.instrumentID, 1)
+        self.assertIsNotNone(rsk.schedule.instrumentID)
         self.assertEqual(rsk.schedule.mode, "wave")
         self.assertEqual(rsk.schedule.gate, "twist activation")
         # Calibrations
         self.assertEqual(len(rsk.calibrations), 1)
         self.assertEqual(rsk.calibrations[0].calibrationID, 1)
         self.assertEqual(rsk.calibrations[0].channelOrder, 9)
-        self.assertEqual(rsk.calibrations[0].instrumentID, 1)
+        self.assertIsNotNone(rsk.calibrations[0].instrumentID)
         self.assertEqual(rsk.calibrations[0].type, "factory")
         self.assertEqual(rsk.calibrations[0].equation, "deri_tideslope")
         self.assertEqual(len(rsk.calibrations[0].c), 9)
@@ -97,21 +97,21 @@ class TestRead(unittest.TestCase):
                 self.assertIsNotNone(rsk.instrument)
                 # Deployment
                 self.assertIsNotNone(rsk.deployment)
-                self.assertEqual(rsk.deployment.deploymentID, 1)
-                self.assertEqual(rsk.deployment.instrumentID, 1)
+                self.assertIsNotNone(rsk.deployment.deploymentID)
+                self.assertIsNotNone(rsk.deployment.instrumentID)
                 self.assertIsInstance(rsk.deployment.timeOfDownload, np.datetime64)
                 # Channels
                 self.assertIsNotNone(rsk.channels)
                 self.assertTrue(rsk.channels != [])
                 # Epoch
                 self.assertIsNotNone(rsk.epoch)
-                self.assertEqual(rsk.epoch.deploymentID, 1)
+                self.assertIsNotNone(rsk.epoch.deploymentID)
                 self.assertIsInstance(rsk.epoch.startTime, np.datetime64)
                 self.assertIsInstance(rsk.epoch.endTime, np.datetime64)
                 # Schedule
                 self.assertIsNotNone(rsk.schedule)
                 self.assertEqual(rsk.schedule.scheduleID, 1)
-                self.assertEqual(rsk.schedule.instrumentID, 1)
+                self.assertIsNotNone(rsk.schedule.instrumentID)
                 # Calibrations
                 self.assertIsNotNone(rsk.schedule)
 
@@ -171,6 +171,13 @@ class TestRead(unittest.TestCase):
                 self.assertIsInstance(rsk.data[0][1], np.double)
                 self.assertGreater(len(rsk.data.dtype.names), 0)
                 self.assertGreater(len(rsk.data), 0)
+
+        # ----- CERVELLO RSK tests -----
+        with RSK(APT_CERVELLO_RSK.as_posix()) as rsk:
+            rsk.readdata()
+            self.assertEqual(len(rsk.diagnosticsChannels),4)
+            self.assertEqual(len(rsk.diagnosticsData),51)
+        # TODO: more comparison to be done in RSKderiveAPT
 
     def test_computeprofiles(self):
         # ----- Golden RSK tests -----

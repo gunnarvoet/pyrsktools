@@ -131,6 +131,8 @@ class RSK:
             instrument (Instrument): Instrument of the dataset. Defaults to None.
             deployment (Deployment): Deployment header information. Defaults to None.
             channels (List[Channel]): A list of instrument channels. Defaults to [].
+            diagnosticsChannels (List[DiagnosticsChannels]): Diagnostics channel name and unit information. Defaults to [].
+            diagnosticsData (List[DiagnosticsData]): Diagnostics information containing battery and time synchronization. Defaults to [].
             epoch (Epoch): The dataset epoch times. Defaults to None.
             schedule (Schedule): Instrument schedule information. Defaults to None.
             scheduleInfo (ScheduleInfo): Information relating to the instrument schedule,
@@ -154,7 +156,7 @@ class RSK:
                 Populated by :obj:`.RSK.readdata`. Defaults to [].
             processedChannelNames (List[str]): The channel names of :obj:`.RSK.processedData`, excluding "timestamp",
                 used to index into :obj:`.RSK.processedData`.
-            processedData (npt.NDArray): A structured NumPY array containing sample data of the current dataset.
+            processedData (npt.NDArray): A structured NumPY array containing processed sample data of the current dataset.
                 Populated by :obj:`.RSK.readprocesseddata`. Defaults to [].
 
         Example:
@@ -201,6 +203,9 @@ class RSK:
         self.ranging: List[Range] = []
         self.instrumentSensors: List[InstrumentSensor] = []
         self.instrumentChannels: List[InstrumentChannel] = []
+        self.diagnosticsChannels: List[DiagnosticsChannels] = []
+        self.diagnosticsData: List[DiagnosticsData] = []
+        self.geoData: List[GeoData] = []
 
         # ----- Public computational attributes -----
         self.data: npt.NDArray = np.array([])
