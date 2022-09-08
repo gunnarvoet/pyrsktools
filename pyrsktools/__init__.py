@@ -53,6 +53,7 @@ class RSK:
         derivetheta,
         derivesoundspeed,
         deriveA0A,
+        deriveAPT,
     )
     from ._rsk.post_processors import (  # type: ignore
         calculateCTlag,

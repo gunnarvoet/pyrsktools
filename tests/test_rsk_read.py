@@ -175,8 +175,8 @@ class TestRead(unittest.TestCase):
         # ----- CERVELLO RSK tests -----
         with RSK(APT_CERVELLO_RSK.as_posix()) as rsk:
             rsk.readdata()
-            self.assertEqual(len(rsk.diagnosticsChannels),4)
-            self.assertEqual(len(rsk.diagnosticsData),51)
+            self.assertEqual(len(rsk.diagnosticsChannels), 4)
+            self.assertEqual(len(rsk.diagnosticsData), 51)
         # TODO: more comparison to be done in RSKderiveAPT
 
     def test_computeprofiles(self):
