@@ -28,8 +28,8 @@ MATLAB_DATA_DIR: Path = _RSK_DIR / "mRSKtools_data"
 MATLAB_RSK_MOOR: Path = _RSK_DIR / "ful_cont_2.18.2_moor.rsk"
 MATLAB_DATA_DIR_MOOR: Path = _RSK_DIR / "mRSKtools_data"
 
-BPR_RSK: Path = _RSK_DIR / "ful_cont_2.18.2_BPR.rsk"  # "ful_cont_2.10.0_002.rsk"
-CERVATA_RSK: Path = _RSK_DIR / ""
+BPR_RSK: Path = _RSK_DIR / "ful_cont_2.18.2_BPR.rsk"
+APT_CERVELLO_RSK: Path = _RSK_DIR / "ful_cont_2.15.0_APT_cervello.rsk"
 
 assert _RSK_DIR.exists() and _RSK_DIR.is_dir()
 assert len(RSK_FILES) > 0

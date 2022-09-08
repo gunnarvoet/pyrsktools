@@ -94,6 +94,56 @@ class Deployment:
 
 
 @dataclass(frozen=True)
+class DiagnosticsChannels:
+    """
+    Attributes:
+        id (int): Defaults to None.
+        name (str): Defaults to None.
+        unit (str): Defaults to None.
+    """
+
+    id: int = None
+    name: str = None
+    unit: str = None
+
+
+@dataclass(frozen=True)
+class DiagnosticsData:
+    """
+    Attributes:
+        tstamp (datetime64): Defaults to None.
+        channelid (str): Defaults to None.
+        value (float): Defaults to None.
+        instrumentID (int): Default to None.
+        deviceIndex (int): Default to None.
+    """
+
+    tstamp: datetime64 = None
+    channelid: str = None
+    value: float = None
+    instrumentID: int = None
+    deviceIndex: int = None
+
+
+@dataclass(frozen=True)
+class GeoData:
+    """
+    Attributes:
+        tstamp (datetime64): Defaults to None.
+        latitude (float): Defaults to None.
+        longitude (float): Defaults to None.
+        accuracy (float): Defaults to None.
+        accuracyType (str): Defaults to None.
+    """
+
+    tstamp: datetime64 = None
+    latitude: float = None
+    longitude: float = None
+    accuracy: float = None
+    accuracyType: str = None
+
+
+@dataclass(frozen=True)
 class Channel:
     """
     Attributes:

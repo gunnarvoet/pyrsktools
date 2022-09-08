@@ -254,6 +254,21 @@ class Reader(ABC):
 
         return results
 
+    def diagnosticsChannels(self: Reader) -> List[DiagnosticsChannels]:
+        """Get all diagnostics channels from the 'diagnostics_channels' table."""
+        datatype, table = DiagnosticsChannels, "diagnostics_channels"
+        return self._createDatatypesFromQuery(datatype, table, orderByAsc="Id")
+
+    def diagnosticsData(self: Reader) -> List[DiagnosticsData]:
+        """Get all diagnostics data from the 'diagnostics_data' table."""
+        datatype, table = DiagnosticsData, "diagnostics_data"
+        return self._createDatatypesFromQuery(datatype, table)
+
+    def geoData(self: Reader) -> List[GeoData]:
+        """Get all geodata from the 'geodata' table."""
+        datatype, table = GeoData, "geodata"
+        return self._createDatatypesFromQuery(datatype, table)
+
     def epoch(self: Reader) -> Optional[Epoch]:
         """Get a single epoch from the 'epochs' table.
         Filters for the epoch with the smallest deploymentID (foreign key)."""

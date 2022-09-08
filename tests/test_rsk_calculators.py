@@ -11,7 +11,7 @@ import numpy as np
 from pyrsktools import RSK, utils
 from pyrsktools.channels import *
 from pyrsktools.datatypes import *
-from common import RSK_FILES, MATLAB_RSK, MATLAB_DATA_DIR, BPR_RSK
+from common import RSK_FILES, MATLAB_RSK, MATLAB_DATA_DIR, BPR_RSK, APT_CERVELLO_RSK
 from common import CSV_FILES, GOLDEN_CSV
 from common import readMatlabFile, readMatlabChannelDataByName
 
@@ -226,7 +226,7 @@ class TestCalculators(unittest.TestCase):
             mask = ~(np.isnan(mValues) | np.isnan(rsk.data[channelName]))
             self.assertGreater(len(rsk.data[channelName][mask]), 10000)
 
-            #print("m vs py: ", mValues[0:5], rsk.data[channelName][0:5])
+            # print("m vs py: ", mValues[0:5], rsk.data[channelName][0:5])
             self.assertTrue(
                 np.allclose(
                     mValues[mask],
@@ -416,7 +416,7 @@ class TestCalculators(unittest.TestCase):
                 channelName = DissolvedO2Concentration.longName
                 hasGiven = False
                 if rsk.channelexists(channelName):
-                    #print(f)
+                    # print(f)
                     given = rsk.data[channelName].copy()
                     hasGiven = True
 
@@ -856,6 +856,63 @@ class TestCalculators(unittest.TestCase):
                 self.assertTrue(
                     np.allclose(mData, rsk.data[pyChannels[i]], atol=1e-04, equal_nan=True)
                 )
+
+    def test_deriveAPT(self):
+        Acceleration_coefficients = [
+            [166.34824076, 156.24548496, -163.35657396],
+            [-5.328037, -17.1992, 12.40078],
+            [-261.0626, -342.8823, 215.658],
+            [0.03088299, 0.03029925, 0.03331123],
+            [0, 0, 0],
+            [29.04551984, 29.65519865, 29.19887879],
+            [-0.291685, 1.094704, 0.276486],
+            [24.50986, 31.78739, 30.48166],
+            [0, 0, 0],
+            [0, 0, 0],
+        ]
+        Alignment_coefficients = [
+            [1.00024800955343, -0.00361697821901, -0.01234855907175],
+            [-0.00361697821901, 1.0000227853442, -0.00151293870726],
+            [-0.01234855907175, 0.00151293870726, 1.00023181988111],
+        ]
+        Temperature_coefficients = [
+            [5.795742, 5.795742, 5.795742],
+            [-3938.81, -3938.684, -3938.464],
+            [-9953.514, -9947.209, -9962.304],
+            [0, 0, 0],
+        ]
+        with RSK(APT_CERVELLO_RSK.as_posix()) as rsk:
+            rsk.readdata()
+            # rsk.deriveBPR()
+            rsk.deriveAPT(
+                Alignment_coefficients, Temperature_coefficients, Acceleration_coefficients
+            )
+            pyChannels = rsk.channelNames[-4:]
+            mChannels = [
+                "X acceleration",
+                "Y acceleration",
+                "Z acceleration",
+                "APT temperature",
+            ]
+
+            mFile = MATLAB_DATA_DIR / "RSKderiveAPT.json"
+            with mFile.open("r") as fd:
+                mRSK = json.load(fd)
+            for i in range(len(mChannels)):
+                mData = readMatlabChannelDataByName(mRSK, mChannels[i])
+                self.assertTrue(
+                    np.allclose(mData, rsk.data[pyChannels[i]], atol=1e-08, equal_nan=True)
+                )
+            # acceleration near 1G
+            pyG = np.sqrt(
+                rsk.data["x_axis_acceleration"] ** 2
+                + rsk.data["y_axis_acceleration"] ** 2
+                + rsk.data["z_axis_acceleration"] ** 2
+            )
+            self.assertTrue(
+                np.allclose(pyG, 9.8 * np.ones(np.shape(pyG)), atol=1e-01, equal_nan=True)
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

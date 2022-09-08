@@ -67,6 +67,9 @@ def open(self: RSK) -> None:
     self.regions = self._reader.regions()
     self.instrumentChannels = self._reader.instrumentChannels()
     self.instrumentSensors = self._reader.instrumentSensors()
+    self.diagnosticsChannels = self._reader.diagnosticsChannels()
+    self.diagnosticsData = self._reader.diagnosticsData()
+    self.geoData = self._reader.geoData()
 
     isCoda = "RBRcoda" in self.instrument.model
     isBPR = "RBRquartz" in self.instrument.model

@@ -83,6 +83,12 @@ deriveA0A
 .. automethod:: pyrsktools.RSK.deriveA0A
 
 
+deriveAPT
+-------------------
+
+.. automethod:: pyrsktools.RSK.deriveAPT
+
+
 Post-processors
 ===================
 
