@@ -160,3 +160,27 @@ Phycoerythrin = Channel(
     units="counts",
     _dbName="Phycoerythrin",
 )
+AccelerationX = Channel(
+    shortName="accx00",
+    longName="x_axis_acceleration",
+    units="m/s²",
+    _dbName="X axis acceleration",
+)
+AccelerationY = Channel(
+    shortName="accy00",
+    longName="y_axis_acceleration",
+    units="m/s²",
+    _dbName="Y axis acceleration",
+)
+AccelerationZ = Channel(
+    shortName="accz00",
+    longName="z_axis_acceleration",
+    units="m/s²",
+    _dbName="Z axis acceleration",
+)
+AccelerometerTemperature = Channel(
+    shortName="temp41",
+    longName="accelerometer_temperature",
+    units="°C",
+    _dbName="Accelerometer temperature",
+)

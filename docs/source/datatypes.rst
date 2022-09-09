@@ -20,6 +20,24 @@ Deployment
 .. autoclass:: pyrsktools.datatypes.Deployment
     :class-doc-from: class
 
+DiagnosticsChannels
+====================================
+
+.. autoclass:: pyrsktools.datatypes.DiagnosticsChannels
+    :class-doc-from: class
+
+DiagnosticsData
+====================================
+
+.. autoclass:: pyrsktools.datatypes.DiagnosticsData
+    :class-doc-from: class
+
+GeoData
+====================================
+
+.. autoclass:: pyrsktools.datatypes.GeoData
+    :class-doc-from: class
+
 Channel
 ====================================
 

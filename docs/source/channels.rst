@@ -101,4 +101,19 @@ Backscatter
 Phycoerythrin
 ====================================
 .. autoclass:: pyrsktools.channels.Phycoerythrin 
-    
+
+AccelerationX
+====================================
+.. autoclass:: pyrsktools.channels.AccelerationX
+
+AccelerationY
+====================================
+.. autoclass:: pyrsktools.channels.AccelerationY
+
+AccelerationZ
+====================================
+.. autoclass:: pyrsktools.channels.AccelerationZ
+
+AccelerometerTemperature
+====================================
+.. autoclass:: pyrsktools.channels.AccelerometerTemperature  

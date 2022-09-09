@@ -983,3 +983,170 @@ def deriveA0A(self: RSK) -> None:
             self.appendchannel(PressureDrift, pressureCorrection)
 
         self.appendlog("BPR pressure(s) corrected for drift using barometer readings.")
+
+
+def _deriveParos(
+    accPeriods: npt.NDArray,
+    tempPeriods: npt.NDArray,
+    tempCoefficients: npt.NDArray,
+    accCoefficients: npt.NDArray,
+) -> Tuple[npt.NDArray, npt.NDArray]:
+    u0 = tempCoefficients[0]
+
+    y1, y2, y3 = tempCoefficients[1], tempCoefficients[2], tempCoefficients[3]
+
+    c1, c2, c3 = accCoefficients[0], accCoefficients[1], accCoefficients[2]
+    d1, d2 = accCoefficients[3], accCoefficients[4]
+    t1, t2, t3, t4, t5 = (
+        accCoefficients[5],
+        accCoefficients[6],
+        accCoefficients[7],
+        accCoefficients[8],
+        accCoefficients[9],
+    )
+
+    U = np.array((tempPeriods / (1e-6)) - u0)
+    temperature = np.array(y1 * U + y2 * U**2 + y3 * U**3)
+    Tsquare = (accPeriods / (1e-6)) * (accPeriods / (1e-6))
+
+    C = np.array(c1 + c2 * U + c3 * U**2)
+    D = np.array(d1 + d2 * U)
+    T0 = np.array(t1 + t2 * U + t3 * U**2 + t4 * U**3 + t5 * U**4)
+
+    acceleration = C * (1 - ((T0 * T0) / Tsquare)) * (1 - D * (1 - ((T0 * T0) / Tsquare)))
+
+    return acceleration, temperature
+
+
+def _alignParos(
+    accX: npt.NDArray, accY: npt.NDArray, accZ: npt.NDArray, alignmentmatrix: Collection[float]
+) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+    # input and output acceleration in m/s^-2
+    alignmentmatrix = np.array(alignmentmatrix)
+    gx = alignmentmatrix[0, 0] * accX + alignmentmatrix[0, 1] * accY + alignmentmatrix[0, 2] * accZ
+    gy = alignmentmatrix[1, 0] * accX + alignmentmatrix[1, 1] * accY + alignmentmatrix[1, 2] * accZ
+    gz = alignmentmatrix[2, 0] * accX + alignmentmatrix[2, 1] * accY + alignmentmatrix[2, 2] * accZ
+
+    return gx, gy, gz
+
+
+def deriveAPT(
+    self: RSK,
+    Alignment_coefficients: Collection[float] = None,
+    Temperature_coefficients: Collection[float] = None,
+    Acceleration_coefficients: Collection[float] = None,
+) -> None:
+    """Convert APT accelerations period and temperature period into accelerations and temperature.
+
+    The RBRquartz³ APT is a combined triaxial quartz accelerometer and a bottom pressure recorder. It is equipped with a Paroscientific, Inc. triaxial accelerometer
+    and records the acceleration output frequencies from the accelerometer. Both 'full' and 'EPdesktop' RSK files contain only frequencies for acceleration and temperature.
+
+    This method derives 3-axis accelerations from the accelerometer frequency channels. It implements
+    the calibration equations developed by Paroscientific, Inc. to derive accelerations. It requires users
+    to input the alignment, temperature and acceleration coefficients. The coefficients are available
+    on the Paroscientific, Inc. triax accelerometer instrument configuration sheet, which is shipped along
+    with the logger. Derived accelerations and temperature are added to the :obj:`.RSK.data` field of the
+    current RSK instance, and the metadata in :obj:`.RSK.channels` is updated.
+
+    .. image:: /img/RSKderiveAPT.png
+        :scale: 80%
+        :align: center
+        :alt: an example of Paroscientific, Inc. triax accelerometer instrument configuration sheet
+
+    Example:
+
+    >>> Alignment_coefficients = [
+    ...         [1.00024800955343, -0.00361697821901, -0.01234855907175],
+    ...         [-0.00361697821901, 1.0000227853442, -0.00151293870726],
+    ...         [-0.01234855907175, 0.00151293870726, 1.00023181988111],
+    ...     ]
+    ... Temperature_coefficients = [
+    ...         [5.795742, 5.795742, 5.795742],
+    ...         [-3938.81, -3938.684, -3938.464],
+    ...         [-9953.514, -9947.209, -9962.304],
+    ...         [0, 0, 0]
+    ...     ]
+    ... Acceleration_coefficients = [
+    ...         [166.34824076, 156.24548496, -163.35657396],
+    ...         [-5.328037,    -17.1992,     12.40078],
+    ...         [-261.0626,    -342.8823,    215.658],
+    ...         [0.03088299,   0.03029925,   0.03331123],
+    ...         [0,            0,            0],
+    ...         [29.04551984,  29.65519865,  29.19887879],
+    ...         [-0.291685,    1.094704,     0.276486],
+    ...         [24.50986,     31.78739,     30.48166],
+    ...         [0,            0,            0],
+    ...         [0,            0,            0],
+    ...     ]
+    ... rsk.deriveAPT(Alignment_coefficients, Temperature_coefficients, Acceleration_coefficients)
+    """
+    self.dataexistsorerror()
+
+    if (
+        (not (Alignment_coefficients))
+        | (not (Temperature_coefficients))
+        | (not (Acceleration_coefficients))
+    ):
+        raise ValueError(
+            f"Invalid coefficients. Please insert the correct coefficients from your Paroscientific, Inc. triax accelerometer instrument configuration sheet"
+        )
+
+    # Find APT by looking for "SACC" in the partNumber or 7-digit partNumber list for APT
+    isAPT = "SACC" in self.instrument.partNumber
+    isAPT1 = self.instrument.partNumber in ["0004274", "0006501", "0010311"]
+    isAPT = isAPT | isAPT1
+
+    # Find the 4 APT channels (3 * peri00 + 1 * peri01)
+    if isAPT:
+        if len(self.channels) < 4:
+            raise ValueError(
+                f"RBRquartzAPT should contain at least 4 channels. Please apply RSK.deriveAPT to RSK files with triax accelerometer measurements."
+            )
+        else:
+            for i, channel in enumerate(self.channels):
+                if i > len(self.channels) - 4:
+                    raise ValueError(f"No 3-axis acceleration period measurements detected.")
+                if (
+                    channel.shortName == "peri00"
+                    and self.channels[i + 1].shortName == "peri00"
+                    and self.channels[i + 2].shortName == "peri00"
+                    and self.channels[i + 3].shortName == "peri01"
+                ):
+                    APTchannelx = channel.longName
+                    APTchannely = self.channels[i + 1].longName
+                    APTchannelz = self.channels[i + 2].longName
+                    APTchanneltemp = self.channels[i + 3].longName
+                    break
+    else:
+        raise ValueError(
+            f"No RBRquartzAPT detected. Please apply RSK.deriveAPT to RSK files with triax accelerometer measurements."
+        )
+
+    accX, tempX = _deriveParos(
+        accPeriods=self.data[APTchannelx] * 1e-12,
+        tempPeriods=self.data[APTchanneltemp] * 1e-12,
+        tempCoefficients=np.array(Temperature_coefficients)[:, 0],
+        accCoefficients=np.array(Acceleration_coefficients)[:, 0],
+    )
+    accY, tempY = _deriveParos(
+        accPeriods=self.data[APTchannely] * 1e-12,
+        tempPeriods=self.data[APTchanneltemp] * 1e-12,
+        tempCoefficients=np.array(Temperature_coefficients)[:, 1],
+        accCoefficients=np.array(Acceleration_coefficients)[:, 1],
+    )
+    accZ, tempZ = _deriveParos(
+        accPeriods=self.data[APTchannelz] * 1e-12,
+        tempPeriods=self.data[APTchanneltemp] * 1e-12,
+        tempCoefficients=np.array(Temperature_coefficients)[:, 2],
+        accCoefficients=np.array(Acceleration_coefficients)[:, 2],
+    )
+
+    accX, accY, accZ = _alignParos(accX, accY, accZ, Alignment_coefficients)
+    temp = (tempX + tempY + tempZ) / 3
+
+    self.appendchannel(AccelerationX, accX)
+    self.appendchannel(AccelerationY, accY)
+    self.appendchannel(AccelerationZ, accZ)
+    self.appendchannel(AccelerometerTemperature, temp)
+
+    self.appendlog("APT accelerations and temperature derived from period data.")
