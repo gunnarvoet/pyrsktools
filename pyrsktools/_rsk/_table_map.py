@@ -166,13 +166,13 @@ _STATIC_TABLE_MAP: dict = {
         },
         "constraints": ["FOREIGN KEY(regionID) REFERENCES REGION(regionID) ON DELETE CASCADE"],
     },
-    "regionComment": {
-        "columns": {
-            "regionID": "INTEGER",
-            "content": "VARCHAR(1024)",
-        },
-        "constraints": ["FOREIGN KEY(regionID) REFERENCES REGION(regionID) ON DELETE CASCADE"],
-    },
+    # "regionComment": {
+    #     "columns": {
+    #         "regionID": "INTEGER",
+    #         "content": "VARCHAR(1024)",
+    #     },
+    #     "constraints": ["FOREIGN KEY(regionID) REFERENCES REGION(regionID) ON DELETE CASCADE"],
+    # },
     "regionExclude": {
         "columns": {
             "regionID": "INTEGER",

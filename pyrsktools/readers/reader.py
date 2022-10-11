@@ -49,7 +49,7 @@ class Reader(ABC):
     REGION_TYPE_MAPPING: dict = {
         RegionCal: {"table": "regionCal", "type": "CALIBRATION"},
         RegionCast: {"table": "regionCast", "type": "CAST"},
-        RegionComment: {"table": "regionComment", "type": "COMMENT"},
+        #RegionComment: {"table": "regionComment", "type": "COMMENT"},
         RegionExclude: {"table": "regionExclude", "type": "EXCLUSION"},
         RegionGeoData: {"table": "regionGeoData", "type": "GPS"},
         RegionPlateau: {"table": "regionPlateau", "type": "PLATEAU"},
@@ -366,7 +366,7 @@ class Reader(ABC):
         Union[
             RegionCal,
             RegionCast,
-            RegionComment,
+            #RegionComment,
             RegionExclude,
             RegionGeoData,
             RegionPlateau,

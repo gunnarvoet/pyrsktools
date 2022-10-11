@@ -379,12 +379,12 @@ def _writedata(db: sqlite3.Connection, tableMap: dict, rsk: RSK) -> None:
                     region.regionProfileID,
                     region.type,
                 ]
-            elif isinstance(region, RegionComment):
-                tableName = "regionComment"
-                columnValues = [
-                    region.regionID,
-                    region.content,
-                ]
+            # elif isinstance(region, RegionComment):
+            #     tableName = "regionComment"
+            #     columnValues = [
+            #         region.regionID,
+            #         region.content,
+            #     ]
             elif isinstance(region, RegionExclude):
                 tableName = "regionExclude"
                 columnValues = [

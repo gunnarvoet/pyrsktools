@@ -613,15 +613,15 @@ class RegionCal(Region):
     sourceID: int = None
 
 
-@dataclass(frozen=True)
-class RegionComment(Region):
-    """Inherits all the fields of :class:`Region`.
+# @dataclass(frozen=True)
+# class RegionComment(Region):
+#     """Inherits all the fields of :class:`Region`.
 
-    Attributes:
-        content (str): Defaults to None.
-    """
+#     Attributes:
+#         content (str): Defaults to None.
+#     """
 
-    content: str = None
+#     content: str = None
 
 
 @dataclass(frozen=True)

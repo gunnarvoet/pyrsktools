@@ -13,7 +13,7 @@ from pyrsktools.datatypes import *
 class RSKEPDesktopReader(Reader):
     TYPE: str = "EPdesktop"
     MIN_SUPPORTED_SEMVER: str = "1.13.4"
-    MAX_SUPPORTED_SEMVER: str = "2.0.0"
+    MAX_SUPPORTED_SEMVER: str = "2.18.2" #"2.0.0"
 
     def calibrations(self: Reader) -> List[Calibration]:
         datatype, table = Calibration, "calibrations"
