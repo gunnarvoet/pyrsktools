@@ -7,7 +7,7 @@ either of which may lead to differences in the underlying dataset structure.
 pyRSKtools currently supports RSKs that are:
 
 * "full" version 2.0.0 or later
-* "EPdesktop" version 1.13.4 or later
+* "EPdesktop" version from 1.13.4 to 2.0.0
 
 .. Note::
 
