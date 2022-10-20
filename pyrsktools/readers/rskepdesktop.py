@@ -38,16 +38,42 @@ class RSKEPDesktopReader(Reader):
             # In EPdesktop RSKs, there are a variable number of coefficient
             # columns in the calibrations table. The below grabs all that exist.
             # For dictionaries below, key is coefficient number and value are...coef value.
-            for coefPrefix in ("c", "x", "n"):
-                fieldsDict[coefPrefix] = {
-                    int(field[1:]): np.nan
-                    if row[field] is None
-                    else (int(row[field]) if coefPrefix == "c" else float(row[field]))
-                    for field in row.keys()
-                    if field.startswith(coefPrefix) and field[1:].isnumeric()
-                }
+            if self.version >= semver2int("2.18.2"): # NOTE: need to know when full and EPdesktop schema merged (known: 2.18.2, they are the same)
+                # For 2.18.2, EPdesktop schema = full schema
+                coefTable = "coefficients"
+                calibrationID = fieldsDict["calibrationID"]
 
-            instance = datatype(**fieldsDict)
-            results.append(instance)
+                # For dictionaries below, key is coefficient number and value are...coef value.
+                fieldsDict["c"], fieldsDict["x"], fieldsDict["n"] = {}, {}, {}
+                for cRow in self._query(
+                    coefTable, where=f"calibrationID = {calibrationID}", orderByAsc="key"
+                ):
+                    coefKey = int(cRow["key"][1:])
+                    coefValue = np.nan if cRow["value"] is None else cRow["value"]
+
+                    if cRow["key"].startswith("c"):
+                        fieldsDict["c"][coefKey] = float(coefValue)
+                    elif cRow["key"].startswith("x"):
+                        fieldsDict["x"][coefKey] = float(coefValue)
+                    elif cRow["key"].startswith("n"):
+                        fieldsDict["n"][coefKey] = int(coefValue)
+                    else:
+                        raise ValueError(
+                            f"Unsupported coefficient type found in '{coefTable}' table: {coefKey}"
+                        )
+                results.append(datatype(**fieldsDict))
+
+            else:
+                for coefPrefix in ("c", "x", "n"):
+                    fieldsDict[coefPrefix] = {
+                        int(field[1:]): np.nan
+                        if row[field] is None
+                        else (int(row[field]) if coefPrefix == "c" else float(row[field]))
+                        for field in row.keys()
+                        if field.startswith(coefPrefix) and field[1:].isnumeric()
+                    }
+
+                instance = datatype(**fieldsDict)
+                results.append(instance)
 
         return results
