@@ -13,7 +13,7 @@ from pyrsktools.datatypes import *
 class RSKEPDesktopReader(Reader):
     TYPE: str = "EPdesktop"
     MIN_SUPPORTED_SEMVER: str = "1.13.4"
-    MAX_SUPPORTED_SEMVER: str = "2.18.2" #"2.0.0"
+    MAX_SUPPORTED_SEMVER: str = "2.18.2"
 
     def calibrations(self: Reader) -> List[Calibration]:
         datatype, table = Calibration, "calibrations"
@@ -38,7 +38,7 @@ class RSKEPDesktopReader(Reader):
             # In EPdesktop RSKs, there are a variable number of coefficient
             # columns in the calibrations table. The below grabs all that exist.
             # For dictionaries below, key is coefficient number and value are...coef value.
-            if self.version >= semver2int("2.18.2"): # NOTE: need to know when full and EPdesktop schema merged (known: 2.18.2, they are the same)
+            if self.version >= semver2int("2.10.0"): # NOTE: need to know when full and EPdesktop schema merged (known: 2.18.2, they are the same)
                 # For 2.18.2, EPdesktop schema = full schema
                 coefTable = "coefficients"
                 calibrationID = fieldsDict["calibrationID"]

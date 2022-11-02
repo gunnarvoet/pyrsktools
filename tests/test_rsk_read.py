@@ -10,6 +10,7 @@ import numpy as np
 from pyrsktools import RSK, utils
 from pyrsktools.datatypes import *
 from pyrsktools.channels import *
+from pyrsktools.utils import semver2int
 from common import RSK_FILES, GOLDEN_RSK, GOLDEN_RSK_TYPE, GOLDEN_RSK_VERSION
 from common import CSV_FILES, GOLDEN_CSV
 from common import MATLAB_RSK, APT_CERVELLO_RSK
@@ -90,9 +91,11 @@ class TestRead(unittest.TestCase):
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:
+            print(f)
             with RSK(f.as_posix()) as rsk:
                 # DbInfo
                 self.assertIsNotNone(rsk.dbInfo)
+                print(rsk.dbInfo.type)
                 # Instrument
                 self.assertIsNotNone(rsk.instrument)
                 # Deployment
@@ -113,7 +116,10 @@ class TestRead(unittest.TestCase):
                 self.assertEqual(rsk.schedule.scheduleID, 1)
                 self.assertIsNotNone(rsk.schedule.instrumentID)
                 # Calibrations
-                self.assertIsNotNone(rsk.schedule)
+                self.assertIsNotNone(rsk.calibrations)
+                if rsk.dbInfo.type == "EPdesktop":
+                    if semver2int(rsk.dbInfo.version) >= semver2int("2.10.0"):
+                        self.assertIsNotNone(rsk.calibrations[0].c)
 
     def test_readdata(self):
         # ----- Golden RSK tests -----
