@@ -15,6 +15,60 @@ class RSKEPDesktopReader(Reader):
     MIN_SUPPORTED_SEMVER: str = "1.13.4"
     MAX_SUPPORTED_SEMVER: str = "2.18.2"
 
+# For EPdesktop 2.16.0, 2.18.2, there is no column of "content" (likely a bug) in the table of "regionComment"
+# So discard content column for these two versions
+    def regions(
+        self,
+    ) -> List[
+        Union[
+            RegionCal,
+            RegionCast,
+            RegionComment,
+            RegionExclude,
+            RegionGeoData,
+            RegionPlateau,
+            RegionProfile,
+            RegionAtmosphere,
+        ]
+    ]:
+        results = []
+        parentTable = "region"
+
+        for childClass, mapping in self.REGION_TYPE_MAPPING.items():
+            childTable = mapping["table"]
+            regionType = mapping["type"]
+
+            columns: Set[str] = {field.name for field in dataclasses.fields(childClass)}
+            columns.discard("type")
+            columns.add(f"{parentTable}.type")
+            columns.discard("regionID")
+            columns.add(f"{parentTable}.regionID")
+            if regionType == "CAST" or regionType == "EXCLUSION":
+                columns.discard("regionType")
+                columns.add(f"{childTable}.type as regionType")
+
+            if regionType == "COMMENT":
+                if self.version>=semver2int("2.16.0"):
+                    columns.discard("content")
+
+            for row in self._query(
+                parentTable,
+                columns=columns,
+                outerJoin=(childTable, "regionID"),
+                where=f'{parentTable}.type="{regionType}"',
+            ):
+                instance = childClass(
+                    **{
+                        field: row[field]
+                        if field != "tstamp1" and field != "tstamp2"
+                        else rsktime2datetime(row[field])
+                        for field in row.keys()
+                    }
+                )
+                results.append(instance)
+
+        return results
+
     def calibrations(self: Reader) -> List[Calibration]:
         datatype, table = Calibration, "calibrations"
 
@@ -38,7 +92,8 @@ class RSKEPDesktopReader(Reader):
             # In EPdesktop RSKs, there are a variable number of coefficient
             # columns in the calibrations table. The below grabs all that exist.
             # For dictionaries below, key is coefficient number and value are...coef value.
-            if self.version >= semver2int("2.10.0"): # NOTE: need to know when full and EPdesktop schema merged (known: 2.18.2, they are the same)
+            # NOTE: need to know when full and EPdesktop schema merged (known: 2.18.2, they are the same)
+            if self.version >= semver2int("2.10.0"):
                 # For 2.18.2, EPdesktop schema = full schema
                 coefTable = "coefficients"
                 calibrationID = fieldsDict["calibrationID"]

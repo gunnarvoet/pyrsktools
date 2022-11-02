@@ -175,7 +175,7 @@ class RSK:
             Union[
                 RegionCal,
                 RegionCast,
-                #RegionComment,
+                RegionComment,
                 RegionExclude,
                 RegionGeoData,
                 RegionPlateau,
@@ -295,7 +295,7 @@ class RSK:
             Union[
                 RegionCal,
                 RegionCast,
-                #RegionComment,
+                RegionComment,
                 RegionExclude,
                 RegionGeoData,
                 RegionPlateau,

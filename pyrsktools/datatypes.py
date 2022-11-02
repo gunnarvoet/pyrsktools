@@ -89,8 +89,8 @@ class Deployment:
     timeOfDownload: datetime64 = None
     name: str = None
     sampleSize: int = None
-    dataStorage: int = 0
-    loggerInitialStatus: int = 0
+    dataStorage: int = None
+    loggerInitialStatus: int = None
 
 
 @dataclass(frozen=True)
@@ -613,15 +613,15 @@ class RegionCal(Region):
     sourceID: int = None
 
 
-# @dataclass(frozen=True)
-# class RegionComment(Region):
-#     """Inherits all the fields of :class:`Region`.
+@dataclass(frozen=True)
+class RegionComment(Region):
+    """Inherits all the fields of :class:`Region`.
 
-#     Attributes:
-#         content (str): Defaults to None.
-#     """
+    Attributes:
+        content (str): Defaults to None.
+    """
 
-#     content: str = None
+    content: str = None
 
 
 @dataclass(frozen=True)

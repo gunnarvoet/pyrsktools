@@ -21,7 +21,7 @@ class RSKFullReader(Reader):
         Union[
             RegionCal,
             RegionCast,
-            #RegionComment,
+            RegionComment,
             RegionExclude,
             RegionGeoData,
             RegionPlateau,

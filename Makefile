@@ -1,13 +1,13 @@
 .PHONY: build upload test check clean
 	
 install:
-	python -m pip install .
+	python3 -m pip install .
 
 dev-install:
-	python -m pip install -e .[dev]
+	python3 -m pip install -e .[dev]
 
 build:
-	python -m build
+	python3 -m build
 
 upload: clean build
 	twine upload dist/*
@@ -29,7 +29,7 @@ test:
 	; echo "rsktools" > .git/info/sparse-checkout \
 	; git pull origin master
 	# Run tests
-	python -m unittest discover tests
+	python3 -m unittest discover tests
 
 format-check: 
 	black --check pyrsktools
