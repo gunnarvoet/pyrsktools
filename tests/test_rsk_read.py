@@ -90,6 +90,7 @@ class TestRead(unittest.TestCase):
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:
+            print(f)
             with RSK(f.as_posix()) as rsk:
                 # DbInfo
                 self.assertIsNotNone(rsk.dbInfo)
