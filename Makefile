@@ -4,7 +4,7 @@ install:
 	python3 -m pip install .
 
 dev-install:
-	python3 -m pip install -e .[dev]
+	python3 -m pip install -e .'[dev]'
 
 build:
 	python3 -m build

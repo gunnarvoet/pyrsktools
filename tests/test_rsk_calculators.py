@@ -66,7 +66,7 @@ class TestCalculators(unittest.TestCase):
                     )
                     # If had given, check we are "close" to the given
                     self.assertTrue(
-                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-02)
+                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-01)
                     )
 
                 # Make sure we deny invalid seawater library parameters
@@ -201,7 +201,7 @@ class TestCalculators(unittest.TestCase):
                     )
                     # If had given, check we are "close" to the given
                     self.assertTrue(
-                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-03)
+                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-00)
                     )
 
                 # Make sure we deny invalid seawater library parameters

@@ -12,8 +12,8 @@ from pyrsktools.datatypes import *
 from pyrsktools.channels import *
 from pyrsktools.utils import semver2int
 from common import RSK_FILES, GOLDEN_RSK, GOLDEN_RSK_TYPE, GOLDEN_RSK_VERSION
-from common import CSV_FILES, GOLDEN_CSV
-from common import MATLAB_RSK, APT_CERVELLO_RSK
+from common import CSV_FILES, GOLDEN_CSV, RSK_FILES_VERSION
+from common import MATLAB_RSK, APT_CERVELLO_RSK, RSK_FILES_PROFILING
 from common import readMatlabFile, Timer, getProfileData
 
 GOLDEN_RSK_CHANNEL_INFO = [
@@ -134,6 +134,46 @@ class TestRead(unittest.TestCase):
                     if semver2int(rsk.dbInfo.version) >= semver2int("2.10.0"):
                         self.assertIsNotNone(rsk.calibrations[0].c)
 
+        # ----- RSK version tests -----
+        for f in RSK_FILES_VERSION:
+            with RSK(f.as_posix()) as rsk:
+                # DbInfo
+                self.assertIsNotNone(rsk.dbInfo)
+                # Instrument
+                self.assertIsNotNone(rsk.instrument)
+                if semver2int(rsk.dbInfo.version) >= semver2int("2.10.0"):
+                    self.assertIsNotNone(rsk.instrument.partNumber)
+
+                # Deployment
+                self.assertIsNotNone(rsk.deployment)
+                self.assertIsNotNone(rsk.deployment.deploymentID)
+                self.assertIsNotNone(rsk.deployment.instrumentID)
+                self.assertIsInstance(
+                    rsk.deployment.timeOfDownload, np.datetime64)
+                if rsk.dbInfo.type == "full":
+                    if semver2int(rsk.dbInfo.version) >= semver2int("2.16.0"):
+                        self.assertIsNotNone(rsk.deployment.dataStorage)
+                        self.assertIsNotNone(
+                            rsk.deployment.loggerInitialStatus)
+
+                # Channels
+                self.assertIsNotNone(rsk.channels)
+                self.assertTrue(rsk.channels != [])
+                # Epoch
+                self.assertIsNotNone(rsk.epoch)
+                self.assertIsNotNone(rsk.epoch.deploymentID)
+                self.assertIsInstance(rsk.epoch.startTime, np.datetime64)
+                self.assertIsInstance(rsk.epoch.endTime, np.datetime64)
+                # Schedule
+                self.assertIsNotNone(rsk.schedule)
+                self.assertEqual(rsk.schedule.scheduleID, 1)
+                self.assertIsNotNone(rsk.schedule.instrumentID)
+                # Calibrations
+                self.assertIsNotNone(rsk.calibrations)
+                if rsk.dbInfo.type == "EPdesktop":
+                    if semver2int(rsk.dbInfo.version) >= semver2int("2.10.0"):
+                        self.assertIsNotNone(rsk.calibrations[0].c)
+
     def test_readdata(self):
         # ----- Golden RSK tests -----
         columnNames = tuple(
@@ -182,14 +222,23 @@ class TestRead(unittest.TestCase):
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:
-            print(f)
             with RSK(f.as_posix()) as rsk:
                 self.assertIsInstance(rsk.data, np.ndarray)
                 self.assertEqual(len(rsk.data), 0)
                 rsk.readdata()
                 self.assertIsInstance(rsk.data, np.ndarray)
-                print(rsk.data)
-                print(rsk.data["timestamp"])
+                self.assertIsInstance(rsk.data["timestamp"][0], np.datetime64)
+                self.assertIsInstance(rsk.data[0][1], np.double)
+                self.assertGreater(len(rsk.data.dtype.names), 0)
+                self.assertGreater(len(rsk.data), 0)
+
+         # ----- RSK version tests -----
+        for f in RSK_FILES_VERSION:
+            with RSK(f.as_posix()) as rsk:
+                self.assertIsInstance(rsk.data, np.ndarray)
+                self.assertEqual(len(rsk.data), 0)
+                rsk.readdata()
+                self.assertIsInstance(rsk.data, np.ndarray)
                 self.assertIsInstance(rsk.data["timestamp"][0], np.datetime64)
                 self.assertIsInstance(rsk.data[0][1], np.double)
                 self.assertGreater(len(rsk.data.dtype.names), 0)
@@ -310,37 +359,33 @@ class TestRead(unittest.TestCase):
                                  [down[i][-1]], profiles[i][0].tstamp2)
 
         # ----- Generic RSK tests -----
-        for f in RSK_FILES:
+        for f in RSK_FILES_PROFILING:
             print(f)
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
 
-            if str(f) == "/Users/QWang/Documents/pyrsktools/tests/rsks/rsktools/EP_2_10_0.rsk": # this file has no data
+                # If no pressure, we can't proceed, so expect an error then move on
+                if not rsk.channelexists(Pressure):
+                    with self.assertRaises(ValueError):
+                        rsk.computeprofiles()
                     continue
-            else:
-                with RSK(f.as_posix()) as rsk:
-                    rsk.readdata()
 
-                    # If no pressure, we can't proceed, so expect an error then move on
-                    if not rsk.channelexists(Pressure):
-                        with self.assertRaises(ValueError):
-                            rsk.computeprofiles()
-                        continue
+                prepopulatedProfiles = [
+                    region for region in rsk.regions if isinstance(region, RegionProfile)
+                ]
+                if prepopulatedProfiles:
+                    self.assertEqual(
+                        len(rsk.getprofilesindices()), len(prepopulatedProfiles))
 
-                    prepopulatedProfiles = [
-                        region for region in rsk.regions if isinstance(region, RegionProfile)
+                rsk.computeprofiles()
+                if rsk.regions:
+                    nonProfileRegions = [
+                        r for r in rsk.regions if type(r) not in [RegionCast, RegionProfile]
                     ]
-                    if prepopulatedProfiles:
-                        self.assertEqual(
-                            len(rsk.getprofilesindices()), len(prepopulatedProfiles))
-
-                    rsk.computeprofiles()
-                    if rsk.regions:
-                        nonProfileRegions = [
-                            r for r in rsk.regions if type(r) not in [RegionCast, RegionProfile]
-                        ]
-                        self.assertEqual(
-                            len(rsk.getprofilesindices()),
-                            (len(rsk.regions) - len(nonProfileRegions)) / 3,
-                        )
+                    self.assertEqual(
+                        len(rsk.getprofilesindices()),
+                        (len(rsk.regions) - len(nonProfileRegions)) / 3,
+                    )
 
     def test_readprocesseddata(self):
         # ----- Golden RSK tests -----

@@ -13,16 +13,21 @@ from pyrsktools import RSK
 _HERE = Path(__file__).parent.resolve()
 _RSK_DIR = _HERE / "rsks/rsktools"
 _CSV_DIR = _RSK_DIR / "csv"
+_VERSION_DIR = _RSK_DIR / "version"
 
 RSK_FILES: Tuple[Path] = tuple(_RSK_DIR.glob("*.rsk"))
-GOLDEN_RSK: Path = _RSK_DIR / "EPd_wave_2.0.0_001.rsk"
+RSK_FILES_PROFILING: Tuple[Path] = tuple(_RSK_DIR.glob("*profiling.rsk"))
+RSK_FILES_MOOR: Tuple[Path] = tuple(_RSK_DIR.glob("*moor.rsk"))
+RSK_FILES_VERSION: Tuple[Path] = tuple(_VERSION_DIR.glob(".rsk"))
+
+GOLDEN_RSK: Path = _RSK_DIR / "EPd_wave_2.0.0_profiling.rsk"
 GOLDEN_RSK_TYPE: str = "EPdesktop"
 GOLDEN_RSK_VERSION: str = "2.0.0"
 
 CSV_FILES: Tuple[Path] = tuple(_CSV_DIR.glob("*.csv"))
 GOLDEN_CSV: Path = _CSV_DIR / "minimal_ctd.csv"
 
-MATLAB_RSK: Path = _RSK_DIR / "ful_cont_2.18.2_001_corrected.rsk"
+MATLAB_RSK: Path = _RSK_DIR / "ful_cont_2.18.2_profiling.rsk"
 MATLAB_DATA_DIR: Path = _RSK_DIR / "mRSKtools_data"
 
 MATLAB_RSK_MOOR: Path = _RSK_DIR / "ful_cont_2.18.2_moor.rsk"

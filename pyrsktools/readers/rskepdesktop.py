@@ -15,8 +15,8 @@ class RSKEPDesktopReader(Reader):
     MIN_SUPPORTED_SEMVER: str = "1.13.4"
     MAX_SUPPORTED_SEMVER: str = "2.18.2"
 
-# For EPdesktop 2.16.0, 2.18.2, there is no column of "content" (likely a bug) in the table of "regionComment"
-# So discard content column for these two versions
+    # For EPdesktop 2.16.0, 2.18.2, there is no column of "content" (likely a bug) in the table of "regionComment"
+    # So discard content column for these two versions
     def regions(
         self,
     ) -> List[
@@ -48,7 +48,7 @@ class RSKEPDesktopReader(Reader):
                 columns.add(f"{childTable}.type as regionType")
 
             if regionType == "COMMENT":
-                if self.version>=semver2int("2.16.0"):
+                if self.version >= semver2int("2.16.0"):
                     columns.discard("content")
 
             for row in self._query(
