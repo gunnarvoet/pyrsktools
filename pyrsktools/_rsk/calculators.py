@@ -254,7 +254,8 @@ def deriveBPR(self: RSK) -> None:
 
     assert len(parosPCal) == len(parosTCal)
 
-    nParos = len(parosPCal)  # Total number of Paros sensors (BPR and barometer)
+    # Total number of Paros sensors (BPR and barometer)
+    nParos = len(parosPCal)
     nBPR = sum(
         (1 for c in self.channels if c.longName.startswith(BprPressure.longName))
     )  # Total number of (already existing) BPRs (updates further in loop)
@@ -1092,9 +1093,14 @@ def deriveAPT(
         )
 
     # Find APT by looking for "SACC" in the partNumber or 7-digit partNumber list for APT
-    isAPT = "SACC" in self.instrument.partNumber
-    isAPT1 = self.instrument.partNumber in ["0004274", "0006501", "0010311"]
-    isAPT = isAPT | isAPT1
+    if self.instrument.partNumber:
+        isAPT = "SACC" in self.instrument.partNumber
+        isAPT1 = self.instrument.partNumber in ["0004274", "0006501", "0010311"]
+        isAPT = isAPT | isAPT1
+    else:
+        raise ValueError(
+            f"No part number is included in the file. Please upgrade your RSK file version to at least v2.10.0."
+        )
 
     # Find the 4 APT channels (3 * peri00 + 1 * peri01)
     if isAPT:

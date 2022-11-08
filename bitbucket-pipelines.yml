@@ -15,7 +15,7 @@ definitions:
                 - pip
             script:
                 - pip install .
-                - pip install mypy
+                - pip install mypy==0.982
                 - make type-check
         - step: &unitTest
             name: Unit test
