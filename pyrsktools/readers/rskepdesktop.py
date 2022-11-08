@@ -92,7 +92,6 @@ class RSKEPDesktopReader(Reader):
             # In EPdesktop RSKs, there are a variable number of coefficient
             # columns in the calibrations table. The below grabs all that exist.
             # For dictionaries below, key is coefficient number and value are...coef value.
-            # NOTE: need to know when full and EPdesktop schema merged (known: 2.18.2, they are the same)
             if self.version >= semver2int("2.10.0"):
                 # For 2.18.2, EPdesktop schema = full schema
                 coefTable = "coefficients"
