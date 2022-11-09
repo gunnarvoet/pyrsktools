@@ -89,8 +89,8 @@ class Deployment:
     timeOfDownload: datetime64 = None
     name: str = None
     sampleSize: int = None
-    dataStorage: int = 0
-    loggerInitialStatus: int = 0
+    dataStorage: int = None
+    loggerInitialStatus: int = None
 
 
 @dataclass(frozen=True)
