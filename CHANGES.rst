@@ -2,6 +2,13 @@
 Changelog
 ##########
 
+Release 1.1.1
+==============================
+
+2022-11-09
+
+* Support "EPdestop" RSK files up to the latest version (v2.18.2)
+
 Release 1.1.0
 ==============================
 
