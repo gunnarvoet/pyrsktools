@@ -6,8 +6,8 @@ RSK files have different types and versions,
 either of which may lead to differences in the underlying dataset structure.
 pyRSKtools currently supports RSKs that are:
 
-* "full" version 2.0.0 or later
-* "EPdesktop" version from 1.13.4 to 2.0.0
+* "full" version from 2.0.0 to 2.18.2
+* "EPdesktop" version from 1.13.4 to 2.18.2 
 
 .. Note::
 

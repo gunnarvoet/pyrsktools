@@ -35,7 +35,7 @@ class TestCalculators(unittest.TestCase):
                 | np.ma.getmask(rsk.data[channelName])
             )
             self.assertGreater(len(rsk.data[channelName][mask]), 10000)
-            self.assertTrue(np.allclose(mValues[mask], rsk.data[channelName][mask], atol=1e-02))
+            self.assertTrue(np.allclose(mValues[mask], rsk.data[channelName][mask], atol=1e-06))
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:
@@ -51,7 +51,23 @@ class TestCalculators(unittest.TestCase):
                 hasGiven = False
                 if rsk.channelexists(channelName):
                     given = rsk.data[channelName].copy()
+                    given_sp = rsk.data["sea_pressure"].copy()
+                    given_t = rsk.data["temperature"].copy()
                     hasGiven = True
+
+                    # Filter out the values out of PSS-78 range in the test: https://salinometry.com/pss-78/
+                    # In GSW, if the PSS-78 algorithm produces a Practical Salinity that is less than 2 
+                    # then the Practical Salinity is recalculated with a modified form of the Hill et al. (1986) formula.  
+                    # The modification of the Hill et al. (1986) expression is to ensure that it is exactly consistent with PSS-78 at SP = 2.
+                    #  Practical salinity: 2 to 42
+                    given[(given < 2) | (given > 42)]= np.nan
+                    rsk.data[channelName][(rsk.data[channelName] < 2) | (rsk.data[channelName] > 42)]=np.nan
+                    #  Sea pressure: 0 to 10000 dbar
+                    given[(given_sp < 0) | (given_sp > 10000)]= np.nan
+                    rsk.data[channelName][(rsk.data["sea_pressure"] < 0) | (rsk.data["sea_pressure"] > 10000)] = np.nan
+                    #  Temperature: -2 to 35 degree C
+                    given[(given_t < -2) | (given_t > 35)] = np.nan
+                    rsk.data[channelName][(rsk.data["temperature"] < -2) | (rsk.data["temperature"] > 35)] = np.nan
 
                 rsk.derivesalinity()  # Overwrites salinity
                 self.assertTrue(rsk.channelexists(channelName))
@@ -64,9 +80,9 @@ class TestCalculators(unittest.TestCase):
                         | np.isnan(rsk.data[channelName])
                         | np.ma.getmask(rsk.data[channelName])
                     )
-                    # If had given, check we are "close" to the given
+                    #If had given, check we are "close" to the given
                     self.assertTrue(
-                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-02)
+                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-03)
                     )
 
                 # Make sure we deny invalid seawater library parameters
@@ -91,10 +107,11 @@ class TestCalculators(unittest.TestCase):
                 | np.ma.getmask(rsk.data[channelName])
             )
             self.assertGreater(len(rsk.data[channelName][mask]), 10000)
-            self.assertTrue(np.allclose(mValues[mask], rsk.data[channelName][mask], atol=1e-02))
+            self.assertTrue(np.allclose(mValues[mask], rsk.data[channelName][mask], atol=1e-10))
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:
+            print(f)
             with RSK(f.as_posix()) as rsk:
                 rsk.readdata()
 
@@ -201,7 +218,7 @@ class TestCalculators(unittest.TestCase):
                     )
                     # If had given, check we are "close" to the given
                     self.assertTrue(
-                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-03)
+                        np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-00)
                     )
 
                 # Make sure we deny invalid seawater library parameters

@@ -2,6 +2,13 @@
 Changelog
 ##########
 
+Release 1.1.1
+==============================
+
+2022-11-09
+
+* Support "EPdesktop" RSK files up to the latest version (from v1.13.4 to v2.18.2)
+
 Release 1.1.0
 ==============================
 
