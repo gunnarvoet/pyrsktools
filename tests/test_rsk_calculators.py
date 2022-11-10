@@ -55,23 +55,23 @@ class TestCalculators(unittest.TestCase):
                     given_t = rsk.data["temperature"].copy()
                     hasGiven = True
 
+                    # Filter out the values out of PSS-78 range in the test: https://salinometry.com/pss-78/
+                    # In GSW, if the PSS-78 algorithm produces a Practical Salinity that is less than 2 
+                    # then the Practical Salinity is recalculated with a modified form of the Hill et al. (1986) formula.  
+                    # The modification of the Hill et al. (1986) expression is to ensure that it is exactly consistent with PSS-78 at SP = 2.
+                    #  Practical salinity: 2 to 42
+                    given[(given < 2) | (given > 42)]= np.nan
+                    rsk.data[channelName][(rsk.data[channelName] < 2) | (rsk.data[channelName] > 42)]=np.nan
+                    #  Sea pressure: 0 to 10000 dbar
+                    given[(given_sp < 0) | (given_sp > 10000)]= np.nan
+                    rsk.data[channelName][(rsk.data["sea_pressure"] < 0) | (rsk.data["sea_pressure"] > 10000)] = np.nan
+                    #  Temperature: -2 to 35 degree C
+                    given[(given_t < -2) | (given_t > 35)] = np.nan
+                    rsk.data[channelName][(rsk.data["temperature"] < -2) | (rsk.data["temperature"] > 35)] = np.nan
+
                 rsk.derivesalinity()  # Overwrites salinity
                 self.assertTrue(rsk.channelexists(channelName))
                 self.assertTrue(any(ch.longName == channelName for ch in rsk.channels))
-
-                # Filter out the values out of PSS-78 range in the test: https://salinometry.com/pss-78/
-                # In GSW, if the PSS-78 algorithm produces a Practical Salinity that is less than 2 
-                # then the Practical Salinity is recalculated with a modified form of the Hill et al. (1986) formula.  
-                # The modification of the Hill et al. (1986) expression is to ensure that it is exactly consistent with PSS-78 at SP = 2.
-                #  Practical salinity: 2 to 42
-                given[(given < 2) | (given > 42)]= np.nan
-                rsk.data[channelName][(rsk.data[channelName] < 2) | (rsk.data[channelName] > 42)]=np.nan
-                #  Sea pressure: 0 to 10000 dbar
-                given[(given_sp < 0) | (given_sp > 10000)]= np.nan
-                rsk.data[channelName][(rsk.data["sea_pressure"] < 0) | (rsk.data["sea_pressure"] > 10000)] = np.nan
-                #  Temperature: -2 to 35 degree C
-                given[(given_t < -2) | (given_t > 35)] = np.nan
-                rsk.data[channelName][(rsk.data["temperature"] < -2) | (rsk.data["temperature"] > 35)] = np.nan
 
                 if hasGiven:
                     # Filter out nan values, they screw up our comparison
