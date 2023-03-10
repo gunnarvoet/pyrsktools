@@ -536,10 +536,12 @@ def getprofilesindices(
     profileDataIndices = []
     for p in profileRegions:
         if regionIndex == 2:
+            # No matter downcast comes first or upcast, the cast with smaller tstamp1 should be listed first
+            firstCast, secondCast = [0,1] if p[0].tstamp1 < p[1].tstamp1 else [1,0]
             indices = np.flatnonzero(
                 np.logical_and(
-                    self.data["timestamp"] >= p[0].tstamp1,
-                    self.data["timestamp"] <= p[0].tstamp2,
+                    self.data["timestamp"] >= p[firstCast].tstamp1,
+                    self.data["timestamp"] <= p[firstCast].tstamp2,
                 )
             )
             indices = np.concatenate(
@@ -547,8 +549,8 @@ def getprofilesindices(
                     indices,
                     np.flatnonzero(
                         np.logical_and(
-                            self.data["timestamp"] >= p[1].tstamp1,
-                            self.data["timestamp"] <= p[1].tstamp2,
+                            self.data["timestamp"] >= p[secondCast].tstamp1,
+                            self.data["timestamp"] <= p[secondCast].tstamp2,
                         )
                     ),
                 )
