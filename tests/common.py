@@ -17,6 +17,7 @@ _VERSION_DIR = _RSK_DIR / "version"
 
 RSK_FILES: Tuple[Path] = tuple(_RSK_DIR.glob("*.rsk"))
 RSK_FILES_PROFILING: Tuple[Path] = tuple(_RSK_DIR.glob("*profiling.rsk"))
+RSK_FILES_BPR: Tuple[Path] = tuple(_RSK_DIR.glob("*bpr.rsk"))
 RSK_FILES_MOOR: Tuple[Path] = tuple(_RSK_DIR.glob("*moor.rsk"))
 RSK_FILES_VERSION: Tuple[Path] = tuple(_VERSION_DIR.glob(".rsk"))
 
