@@ -979,7 +979,6 @@ def deriveA0A(self: RSK) -> None:
                 pressureCorrection,
             )
         else:
-
             self.appendchannel(BprCorrectedPressure, bprCorrection)
             self.appendchannel(PressureDrift, pressureCorrection)
 

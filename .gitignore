@@ -15,6 +15,9 @@ rsks/
 playground/
 /run.py
 !sample.rsk
+*.ipynb
+demo/
+pre-test/
 
 # due to using tox and pytest
 .tox

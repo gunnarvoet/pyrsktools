@@ -7,6 +7,7 @@ import os
 import sqlite3
 import csv
 import numpy as np
+import numpy.ma as ma
 import numpy.typing as npt
 import sys
 from enum import IntEnum
@@ -160,6 +161,11 @@ def _detectprofiles(
     pressureThreshold: float = 3.0,
     conductivityThreshold: float = 0.05,
 ) -> npt.NDArray:
+    indx = ~(np.isnan(pressure) | np.isnan(conductivity))
+    pressure = pressure[indx]
+    conductivity = conductivity[indx]
+    timestamp = timestamp[indx]
+
     pressureThreshold = float(pressureThreshold)
     conductivityThreshold = float(conductivityThreshold)
     # Event profiles. Timestamp and event index describing the start of the event
