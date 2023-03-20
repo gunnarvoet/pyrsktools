@@ -49,8 +49,7 @@ class TestRead(unittest.TestCase):
         rsk.open()
         # Db info
         self.assertEqual(rsk._reader.TYPE, GOLDEN_RSK_TYPE)
-        self.assertEqual(rsk._reader.version,
-                         utils.semver2int(GOLDEN_RSK_VERSION))
+        self.assertEqual(rsk._reader.version, utils.semver2int(GOLDEN_RSK_VERSION))
         # Instrument
         self.assertEqual(rsk.instrument.serialID, 204571)
         self.assertEqual(rsk.instrument.model, "RBRconcerto³")
@@ -61,8 +60,7 @@ class TestRead(unittest.TestCase):
         # Deployment
         self.assertIsNotNone(rsk.deployment.deploymentID)
         self.assertIsNotNone(rsk.deployment.instrumentID)
-        self.assertEqual(rsk.deployment.timeOfDownload,
-                         utils.rsktime2datetime(1603763961894))
+        self.assertEqual(rsk.deployment.timeOfDownload, utils.rsktime2datetime(1603763961894))
         # Channels
         self.assertEqual(len(rsk.channels), 18)
         for i, channel in enumerate(rsk.channels):
@@ -71,10 +69,8 @@ class TestRead(unittest.TestCase):
             self.assertEqual(channel.units, units)
         # Epoch
         self.assertIsNotNone(rsk.epoch.deploymentID)
-        self.assertEqual(rsk.epoch.startTime,
-                         utils.rsktime2datetime(946684800000))
-        self.assertEqual(rsk.epoch.endTime,
-                         utils.rsktime2datetime(4102358400000))
+        self.assertEqual(rsk.epoch.startTime, utils.rsktime2datetime(946684800000))
+        self.assertEqual(rsk.epoch.endTime, utils.rsktime2datetime(4102358400000))
         # Schedule
         self.assertEqual(rsk.schedule.scheduleID, 1)
         self.assertIsNotNone(rsk.schedule.instrumentID)
@@ -96,6 +92,7 @@ class TestRead(unittest.TestCase):
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:
+            print(f)
             with RSK(f.as_posix()) as rsk:
                 # DbInfo
                 self.assertIsNotNone(rsk.dbInfo)
@@ -108,13 +105,11 @@ class TestRead(unittest.TestCase):
                 self.assertIsNotNone(rsk.deployment)
                 self.assertIsNotNone(rsk.deployment.deploymentID)
                 self.assertIsNotNone(rsk.deployment.instrumentID)
-                self.assertIsInstance(
-                    rsk.deployment.timeOfDownload, np.datetime64)
+                self.assertIsInstance(rsk.deployment.timeOfDownload, np.datetime64)
                 if rsk.dbInfo.type == "full":
                     if semver2int(rsk.dbInfo.version) >= semver2int("2.16.0"):
                         self.assertIsNotNone(rsk.deployment.dataStorage)
-                        self.assertIsNotNone(
-                            rsk.deployment.loggerInitialStatus)
+                        self.assertIsNotNone(rsk.deployment.loggerInitialStatus)
 
                 # Channels
                 self.assertIsNotNone(rsk.channels)
@@ -148,13 +143,11 @@ class TestRead(unittest.TestCase):
                 self.assertIsNotNone(rsk.deployment)
                 self.assertIsNotNone(rsk.deployment.deploymentID)
                 self.assertIsNotNone(rsk.deployment.instrumentID)
-                self.assertIsInstance(
-                    rsk.deployment.timeOfDownload, np.datetime64)
+                self.assertIsInstance(rsk.deployment.timeOfDownload, np.datetime64)
                 if rsk.dbInfo.type == "full":
                     if semver2int(rsk.dbInfo.version) >= semver2int("2.16.0"):
                         self.assertIsNotNone(rsk.deployment.dataStorage)
-                        self.assertIsNotNone(
-                            rsk.deployment.loggerInitialStatus)
+                        self.assertIsNotNone(rsk.deployment.loggerInitialStatus)
 
                 # Channels
                 self.assertIsNotNone(rsk.channels)
@@ -177,8 +170,7 @@ class TestRead(unittest.TestCase):
     def test_readdata(self):
         # ----- Golden RSK tests -----
         columnNames = tuple(
-            ["timestamp"] + [channelName for channelName,
-                             _ in GOLDEN_RSK_CHANNEL_INFO]
+            ["timestamp"] + [channelName for channelName, _ in GOLDEN_RSK_CHANNEL_INFO]
         )
         data0_known = np.array(
             (
@@ -205,7 +197,6 @@ class TestRead(unittest.TestCase):
         )
 
         with RSK(GOLDEN_RSK.as_posix()) as rsk:
-
             rsk.readdata()
             data0_loaded = np.array(rsk.data[0].tolist())
             self.assertGreater(len(rsk.data), 0)
@@ -232,7 +223,7 @@ class TestRead(unittest.TestCase):
                 self.assertGreater(len(rsk.data.dtype.names), 0)
                 self.assertGreater(len(rsk.data), 0)
 
-         # ----- RSK version tests -----
+        # ----- RSK version tests -----
         for f in RSK_FILES_VERSION:
             with RSK(f.as_posix()) as rsk:
                 self.assertIsInstance(rsk.data, np.ndarray)
@@ -260,8 +251,7 @@ class TestRead(unittest.TestCase):
             self.assertEqual(len(rsk.getregionsbytypes([RegionCal])), 1)
             self.assertEqual(len(rsk.getregionsbytypes([RegionExclude])), 1)
 
-            prepopulatedProfileRegions = rsk.getregionsbytypes(
-                [RegionProfile, RegionCast])
+            prepopulatedProfileRegions = rsk.getregionsbytypes([RegionProfile, RegionCast])
             self.assertEqual(len(prepopulatedProfileRegions), 45)
 
             rsk.readdata()
@@ -325,38 +315,31 @@ class TestRead(unittest.TestCase):
             self.assertEqual(len(up), 15)
             self.assertEqual(len(down), 15)
             self.assertEqual(len(rsk.getprofilesindices(profiles=0)), 1)
-            self.assertEqual(
-                len(rsk.getprofilesindices(profiles=[0, 1, 6])), 3)
+            self.assertEqual(len(rsk.getprofilesindices(profiles=[0, 1, 6])), 3)
             # Index starts at 0, 15 is out of range. Expect an error to be raised
             with self.assertRaises(ValueError):
                 rsk.getprofilesindices(profiles=15)
 
             # Ya, ya...inefficient
-            rP = [region for region in rsk.regions if type(
-                region) in [RegionCast, RegionProfile]]
+            # profiles = rsk.getprofilesorerror() #TODO: this line was from the feature branch created by Yusef, need to review
+            # if the next 9 lines can be replaced by this one line.
+            rP = [region for region in rsk.regions if type(region) in [RegionCast, RegionProfile]]
             profiles: List[Tuple[RegionCast, RegionCast, RegionProfile]] = [
-                rP[i: i + 3]
+                rP[i : i + 3]
                 for i in range(0, len(rP), 3)
                 if isinstance(rP[i], RegionCast)
                 and isinstance(rP[i + 1], RegionCast)
                 and isinstance(rP[i + 2], RegionProfile)
             ]
-            self.assertEqual(len(profiles), len(both))
             # Go through each profile index list and check that the
             # first and last index actually match the profile start and end times.
             for i in range(len(both)):
-                self.assertEqual(rsk.data["timestamp"]
-                                 [both[i][0]], profiles[i][2].tstamp1)
-                self.assertEqual(rsk.data["timestamp"]
-                                 [both[i][-1]], profiles[i][2].tstamp2)
-                self.assertEqual(rsk.data["timestamp"]
-                                 [up[i][0]], profiles[i][1].tstamp1)
-                self.assertEqual(rsk.data["timestamp"]
-                                 [up[i][-1]], profiles[i][1].tstamp2)
-                self.assertEqual(rsk.data["timestamp"]
-                                 [down[i][0]], profiles[i][0].tstamp1)
-                self.assertEqual(rsk.data["timestamp"]
-                                 [down[i][-1]], profiles[i][0].tstamp2)
+                self.assertEqual(rsk.data["timestamp"][both[i][0]], profiles[i][2].tstamp1)
+                self.assertEqual(rsk.data["timestamp"][both[i][-1]], profiles[i][2].tstamp2)
+                self.assertEqual(rsk.data["timestamp"][up[i][0]], profiles[i][1].tstamp1)
+                self.assertEqual(rsk.data["timestamp"][up[i][-1]], profiles[i][1].tstamp2)
+                self.assertEqual(rsk.data["timestamp"][down[i][0]], profiles[i][0].tstamp1)
+                self.assertEqual(rsk.data["timestamp"][down[i][-1]], profiles[i][0].tstamp2)
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES_PROFILING:
@@ -374,8 +357,22 @@ class TestRead(unittest.TestCase):
                     region for region in rsk.regions if isinstance(region, RegionProfile)
                 ]
                 if prepopulatedProfiles:
-                    self.assertEqual(
-                        len(rsk.getprofilesindices()), len(prepopulatedProfiles))
+                    self.assertEqual(len(rsk.getprofilesindices()), len(prepopulatedProfiles))
+
+                # Test cast directions
+                Idx_upcast = rsk.getprofilesindices(direction="up")
+                for idx in Idx_upcast:
+                    p_upcast = rsk.data["pressure"][idx]
+                    self.assertTrue(p_upcast[0] > p_upcast[-1])
+                Idx_downcast = rsk.getprofilesindices(direction="down")
+                for idx in Idx_downcast:
+                    p_downcast = rsk.data["pressure"][idx]
+                    self.assertTrue(p_downcast[0] < p_downcast[-1])
+                Idx_bothcast = rsk.getprofilesindices(
+                    direction="both"
+                )  # ensure idx ordered by time
+                for idx in Idx_bothcast:
+                    self.assertTrue(rsk.data["timestamp"][idx[0]] < rsk.data["timestamp"][idx[-1]])
 
                 rsk.computeprofiles()
                 if rsk.regions:
@@ -391,8 +388,7 @@ class TestRead(unittest.TestCase):
         # ----- Golden RSK tests -----
         # Only first 8 channels are contained in burstData
         columnNames = tuple(
-            ["timestamp"] + [channelName for channelName,
-                             _ in GOLDEN_RSK_CHANNEL_INFO[:8]]
+            ["timestamp"] + [channelName for channelName, _ in GOLDEN_RSK_CHANNEL_INFO[:8]]
         )
         data0_known = np.array(
             (
@@ -432,16 +428,14 @@ class TestRead(unittest.TestCase):
                 self.assertEqual(rsk.processedData.size, 0)
                 if f == GOLDEN_RSK:
                     # Golden RSK is big.
-                    rsk.readprocesseddata(
-                        t2=np.datetime64(1601690452938, "ms"))
+                    rsk.readprocesseddata(t2=np.datetime64(1601690452938, "ms"))
                 else:
                     # Let's hope the other test RSKs aren't as big =).
                     rsk.readprocesseddata()
                 self.assertIsInstance(rsk.processedData, np.ndarray)
                 self.assertGreater(len(rsk.processedData.dtype.names), 0)
                 if len(rsk.processedData) > 0:
-                    self.assertIsInstance(
-                        rsk.processedData["timestamp"][0], np.datetime64)
+                    self.assertIsInstance(rsk.processedData["timestamp"][0], np.datetime64)
                     self.assertIsInstance(rsk.processedData[0][1], np.double)
 
     def test_csv2rsk(self):
@@ -474,8 +468,7 @@ class TestRead(unittest.TestCase):
             # Make sure we can access "timestamp" data column
             rsk.data["timestamp"]
             self.assertIsNotNone(rsk.data)
-            self.assertEqual(rsk.epoch.startTime,
-                             np.min(rsk.data["timestamp"]))
+            self.assertEqual(rsk.epoch.startTime, np.min(rsk.data["timestamp"]))
             self.assertEqual(rsk.epoch.endTime, np.max(rsk.data["timestamp"]))
             rsk.close()
 

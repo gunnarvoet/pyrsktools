@@ -294,6 +294,8 @@ def deriveBPR(self: RSK) -> None:
             derivedPChannel = BprPressure
         elif pChannel.shortName == "baro00":
             derivedPChannel = BarometerPressure
+        elif pChannel.shortName == "peri02":
+            derivedPChannel = BprPressure
         else:
             raise ValueError(f"Unknown pressure channel shortName: {pChannel.shortName}")
 
@@ -301,6 +303,8 @@ def deriveBPR(self: RSK) -> None:
             derivedTChannel = BprTemperature
         elif tChannel.shortName == "baro01":
             derivedTChannel = BarometerTemperature
+        elif tChannel.shortName == "peri03":
+            derivedTChannel = BprTemperature
         else:
             raise ValueError(f"Unknown temperature channel shortName: {tChannel.shortName}")
 
