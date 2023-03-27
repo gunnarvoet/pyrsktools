@@ -38,6 +38,8 @@ There are two approaches to instantiating and opening an RSK file, as shown belo
 
 .. code-block:: python
 
+    from pyrsktools import RSK
+    
     with RSK("/path/to/data.rsk") as rsk:
         # Read, process, view, or export data here
 

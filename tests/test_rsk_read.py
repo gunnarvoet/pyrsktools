@@ -92,7 +92,6 @@ class TestRead(unittest.TestCase):
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES:
-            print(f)
             with RSK(f.as_posix()) as rsk:
                 # DbInfo
                 self.assertIsNotNone(rsk.dbInfo)
@@ -331,15 +330,22 @@ class TestRead(unittest.TestCase):
                 and isinstance(rP[i + 1], RegionCast)
                 and isinstance(rP[i + 2], RegionProfile)
             ]
+            self.assertEqual(len(profiles), len(both))
+            if len(profiles) > 0:
+                if profiles[0][0].isdowncast():
+                    downIndex, upIndex = 0, 1
+                else:
+                    upIndex, downIndex = 0, 1
+
             # Go through each profile index list and check that the
             # first and last index actually match the profile start and end times.
             for i in range(len(both)):
                 self.assertEqual(rsk.data["timestamp"][both[i][0]], profiles[i][2].tstamp1)
                 self.assertEqual(rsk.data["timestamp"][both[i][-1]], profiles[i][2].tstamp2)
-                self.assertEqual(rsk.data["timestamp"][up[i][0]], profiles[i][1].tstamp1)
-                self.assertEqual(rsk.data["timestamp"][up[i][-1]], profiles[i][1].tstamp2)
-                self.assertEqual(rsk.data["timestamp"][down[i][0]], profiles[i][0].tstamp1)
-                self.assertEqual(rsk.data["timestamp"][down[i][-1]], profiles[i][0].tstamp2)
+                self.assertEqual(rsk.data["timestamp"][up[i][0]], profiles[i][upIndex].tstamp1)
+                self.assertEqual(rsk.data["timestamp"][up[i][-1]], profiles[i][upIndex].tstamp2)
+                self.assertEqual(rsk.data["timestamp"][down[i][0]], profiles[i][downIndex].tstamp1)
+                self.assertEqual(rsk.data["timestamp"][down[i][-1]], profiles[i][downIndex].tstamp2)
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES_PROFILING:
@@ -370,7 +376,7 @@ class TestRead(unittest.TestCase):
                     self.assertTrue(p_downcast[0] < p_downcast[-1])
                 Idx_bothcast = rsk.getprofilesindices(
                     direction="both"
-                )  # ensure idx ordered by time
+                )  # just ensure idx ordered by time
                 for idx in Idx_bothcast:
                     self.assertTrue(rsk.data["timestamp"][idx[0]] < rsk.data["timestamp"][idx[-1]])
 
