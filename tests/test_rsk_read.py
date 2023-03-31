@@ -385,9 +385,16 @@ class TestRead(unittest.TestCase):
                     nonProfileRegions = [
                         r for r in rsk.regions if type(r) not in [RegionCast, RegionProfile]
                     ]
+                    # deal with the odd cast scenario
+                    regionsN = (
+                        (len(rsk.regions) - len(nonProfileRegions)) / 3
+                        if (len(rsk.regions) - len(nonProfileRegions)) % 3 == 0
+                        else (1 + len(rsk.regions) - len(nonProfileRegions)) / 3
+                    )
+
                     self.assertEqual(
                         len(rsk.getprofilesindices()),
-                        (len(rsk.regions) - len(nonProfileRegions)) / 3,
+                        regionsN,
                     )
 
     def test_readprocesseddata(self):

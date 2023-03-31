@@ -69,7 +69,8 @@ def getprofilesorerror(
             elif region.isupcast():
                 upRegion = region
         elif isinstance(region, RegionProfile):
-            if not downRegion or not upRegion:
+            # if not downRegion or not upRegion: # here requires both upcast and downcast in one profile
+            if not downRegion and not upRegion:  # this allows one cast exist under one profile
                 raise ValueError("Failed to get profiles due to missing cast region(s)")
             if profileRegion:
                 raise ValueError("Failed to get profiles due to extraneous profile region")
@@ -78,7 +79,18 @@ def getprofilesorerror(
             # If they passed in profile indices and our current index is in there, get it.
             if not profiles or profileIndex in profiles:
                 profileRegion = region
-                profileRegions.append((downRegion, upRegion, profileRegion))
+                # allow single cast appended
+                if downRegion and upRegion:
+                    # append the cast in the order of time
+                    profileRegions.append(
+                        (downRegion, upRegion, profileRegion)
+                    ) if downRegion.tstamp2 < upRegion.tstamp2 else profileRegions.append(
+                        (upRegion, downRegion, profileRegion)
+                    )
+                else:
+                    profileRegions.append(
+                        (downRegion, upRegion, profileRegion)
+                    )  # either downRegion or upRegion is None
 
             downRegion, upRegion, profileRegion = None, None, None
             profileIndex += 1
