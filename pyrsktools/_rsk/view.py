@@ -267,8 +267,13 @@ def plotprofiles(
     if direction == "both":
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        profileIndices = [(up[i], down[i]) for i in range(len(up))]
+        if len(up) == len(down):
+            profileIndices = [(up[i], down[i]) for i in range(len(up))]
+        else:
+            profileIndices = [(up[i], down[i]) for i in range(min(len(up), len(down)))]
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            profileIndices.append([lastprofile, []])  # type:ignore
+
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
 

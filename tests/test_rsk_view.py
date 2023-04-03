@@ -12,7 +12,7 @@ from matplotlib.pyplot import rcParams
 from pyrsktools import RSK, utils
 from pyrsktools.channels import *
 from pyrsktools.datatypes import *
-from common import GOLDEN_RSK
+from common import GOLDEN_RSK, RSK_FILES_PROFILING
 from common import MATLAB_RSK, MATLAB_DATA_DIR
 from common import MATLAB_RSK_MOOR
 
@@ -47,6 +47,20 @@ class TestView(unittest.TestCase):
             # fig, axes = rsk.plotprofiles(profiles=1)
             # plt.show()
 
+        # ----- Generic RSK tests -----
+        for f in RSK_FILES_PROFILING:
+            print(f)
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+            rsk.deriveseapressure()
+            rsk.derivesalinity()
+
+            fig, axes = rsk.plotprofiles(
+                channels=["conductivity","temperature"],
+                direction="both",
+            )
+            #plt.show()
+
     def test_plotprocesseddata(self):
 
         with RSK(GOLDEN_RSK.as_posix()) as rsk:
@@ -58,8 +72,7 @@ class TestView(unittest.TestCase):
                 rsk.plotprocesseddata(channels="pressure"),
                 rsk.plotdata(channels="pressure"),
             )
-
-            # plt.show()
+            #plt.show()
 
             # fig, axes = rsk.plotprocesseddata()
             # fig, axes = rsk.plotprocesseddata(channels="pressure")

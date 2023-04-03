@@ -573,18 +573,22 @@ def getprofilesindices(
 
     # deal with the last profile separately, it could contain a pair of casts or single cast
     p = profileRegions[-1]
-    if None in p: # unequal number of up and downcast
+    if None in p:  # unequal number of up and downcast
         p = list(p)
         p.remove(None)
-        if (regionIndex == 2) or (profileRegions[0][0].isdowncast() and direction == "down") or (profileRegions[0][0].isupcast() and direction == "up"):
+        if (
+            (regionIndex == 2)
+            or (profileRegions[0][0].isdowncast() and direction == "down")
+            or (profileRegions[0][0].isupcast() and direction == "up")
+        ):
             indices = np.flatnonzero(
                 np.logical_and(
                     self.data["timestamp"] >= p[0].tstamp1,
                     self.data["timestamp"] <= p[0].tstamp2,
                 )
             )
-            profileDataIndices.append(indices.tolist())  
-    else: # paired casts
+            profileDataIndices.append(indices.tolist())
+    else:  # paired casts
         if regionIndex == 2:
             # No matter downcast comes first or upcast, the cast with smaller tstamp1 should be listed first
             firstCast, secondCast = [0, 1] if p[0].tstamp1 < p[1].tstamp1 else [1, 0]
