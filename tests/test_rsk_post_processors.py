@@ -147,6 +147,12 @@ class TestPostProcessors(unittest.TestCase):
                         np.allclose(mData[mask], pyData[mask], atol=1e-6, equal_nan=True)
                     )
                 print("pass (action interp)", pyChannels[chan])
+        
+        # ----- Generic RSK tests (profiling) -----
+        for f in RSK_FILES_PROFILING:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                _ = rsk.correcthold(action="interp")
 
     def test_correctTM(self):
         mRSK = readMatlabFile("RSKcorrectTM.json")
@@ -185,6 +191,12 @@ class TestPostProcessors(unittest.TestCase):
                 self.assertGreater(len(pyData[mask]), 1000)
                 self.assertTrue(np.allclose(mData[mask], pyData[mask], atol=1e-02, equal_nan=True))
 
+        # ----- Generic RSK tests (profiling) -----
+        for f in RSK_FILES_PROFILING:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.correctTM(alpha=0.04, beta=0.1)
+
     def test_correcttau(self):
         # ----- Matlab RSK tests -----
         # This function required the user to specify a channel
@@ -199,6 +211,13 @@ class TestPostProcessors(unittest.TestCase):
             for pyData, mData in getProfileData(rsk, mRSK):
                 # self.assertTrue(np.equal(pyProfileData,mProfileData).all())
                 self.assertTrue(np.allclose(pyData, mData, atol=1e-08, equal_nan=True))
+
+        # ----- Generic RSK tests (profiling) -----
+        channelName = Temperature.longName
+        for f in RSK_FILES_PROFILING:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.correcttau(channel=channelName, tauResponse=2)
 
     def test_centrebursttimestamp(self):
         # ----- Matlab RSK tests -----
@@ -390,6 +409,7 @@ class TestPostProcessors(unittest.TestCase):
         # TODO: how to compare against mValues?
 
     def test_smooth(self):
+        # ----- MATLAB RSK tests -----
 
         # --- Test 1: profiling data, method: default boxcar
         # --- RSK = RSKreadprofiles(RSK);
@@ -449,6 +469,12 @@ class TestPostProcessors(unittest.TestCase):
                 # self.assertTrue(np.allclose(pyData[:-1], mData[:-1], atol=1e-8, equal_nan=True))
                 self.assertTrue(np.allclose(pyData, mData, atol=1e-8, equal_nan=True))
 
+        # ----- Generic RSK tests -----
+        for f in RSK_FILES:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.smooth(channels=rsk.channelNames[0])
+
     def test_despikes(self):
 
         # test1: action = nan
@@ -504,6 +530,12 @@ class TestPostProcessors(unittest.TestCase):
                 self.assertGreater(len(pyData[mask]), 1000)
                 self.assertTrue(np.allclose(mData[mask], pyData[mask], atol=1e-10, equal_nan=True))
 
+        # ----- Generic RSK tests -----
+        for f in RSK_FILES:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                _ = rsk.despike(channels=rsk.channelNames[0],action="interp", threshold=4, windowLength=11)
+
     def test_removeloops(self):
         # there's no channelIDs for derived channels in mRSK file, get errors when using getProfileData, so manually loop the channels
         with RSK(MATLAB_RSK.as_posix()) as rsk:
@@ -539,6 +571,15 @@ class TestPostProcessors(unittest.TestCase):
                         np.allclose(mData[mask], pyData[mask], atol=1e-10, equal_nan=True)
                     )
                 print("pass ", pyChannels[chan])
+
+        # ----- Generic RSK tests -----
+        for f in RSK_FILES_PROFILING:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.deriveseapressure()
+                rsk.derivedepth()
+                rsk.derivevelocity()
+                _ = rsk.removeloops(threshold=0.1)
 
 
 if __name__ == "__main__":

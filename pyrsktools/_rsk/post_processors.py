@@ -71,12 +71,12 @@ def calculateCTlag(
     temperature = self.data[Temperature.longName]
     seaPressure = self.data[SeaPressure.longName]
 
-    profileRegions = self.getprofilesorerror(profiles) # ensure profiles exist
+    profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
     if direction == "both":
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
         profileIndices = []
-        
+
         if len(up) == len(down):
             for i in range(len(up)):
                 if profileRegions[0][0].isdowncast():
@@ -86,8 +86,8 @@ def calculateCTlag(
                     profileIndices.append(up[i])
                     profileIndices.append(down[i])
         else:
-            for i in range(min(len(up),len(down))):
-                if len(up)>len(down):
+            for i in range(min(len(up), len(down))):
+                if len(up) > len(down):
                     profileIndices.append(up[i])
                     profileIndices.append(down[i])
                 else:
@@ -95,7 +95,7 @@ def calculateCTlag(
                     profileIndices.append(up[i])
 
             lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
-            profileIndices.append(lastprofile)  # type:ignore
+            profileIndices.append(lastprofile)
 
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
@@ -219,12 +219,12 @@ def alignchannel(
 
     lag = utils.intoarray(lag)
 
-    profileRegions = self.getprofilesorerror(profiles) # ensure profiles exist
+    profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
     if direction == "both":
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
         profileIndices = []
-        
+
         if len(up) == len(down):
             for i in range(len(up)):
                 if profileRegions[0][0].isdowncast():
@@ -234,8 +234,8 @@ def alignchannel(
                     profileIndices.append(up[i])
                     profileIndices.append(down[i])
         else:
-            for i in range(min(len(up),len(down))):
-                if len(up)>len(down):
+            for i in range(min(len(up), len(down))):
+                if len(up) > len(down):
                     profileIndices.append(up[i])
                     profileIndices.append(down[i])
                 else:
@@ -243,7 +243,7 @@ def alignchannel(
                     profileIndices.append(up[i])
 
             lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
-            profileIndices.append(lastprofile)  # type:ignore
+            profileIndices.append(lastprofile)
 
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
@@ -622,16 +622,35 @@ def correcthold(
     self.dataexistsorerror()
     self.channelsexistorerror(channels)
 
+    profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
     if direction == "both":
-        profileIndices = []
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
+        profileIndices = []
+
+        if len(up) == len(down):
+            for i in range(len(up)):
+                if profileRegions[0][0].isdowncast():
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+                else:
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+        else:
+            for i in range(min(len(up), len(down))):
+                if len(up) > len(down):
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+                else:
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            profileIndices.append(lastprofile)
+
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
+
     channelNames, _ = self.getchannelnamesandunits(channels)
 
     holdpts = {}
@@ -754,14 +773,31 @@ def despike(
     if not self.getregionsbytypes([RegionCast, RegionProfile]):
         dataIndices = self.getdataseriesindices()
     else:
+        profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
         if direction == "both":
-            dataIndices = []
             up = self.getprofilesindices(profiles, "up")
             down = self.getprofilesindices(profiles, "down")
-            assert len(up) == len(down)
-            for i in range(len(up)):
-                dataIndices.append(down[i])
-                dataIndices.append(up[i])
+            dataIndices = []
+
+            if len(up) == len(down):
+                for i in range(len(up)):
+                    if profileRegions[0][0].isdowncast():
+                        dataIndices.append(down[i])
+                        dataIndices.append(up[i])
+                    else:
+                        dataIndices.append(up[i])
+                        dataIndices.append(down[i])
+            else:
+                for i in range(min(len(up), len(down))):
+                    if len(up) > len(down):
+                        dataIndices.append(up[i])
+                        dataIndices.append(down[i])
+                    else:
+                        dataIndices.append(down[i])
+                        dataIndices.append(up[i])
+
+                lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+                dataIndices.append(lastprofile)
         else:
             dataIndices = self.getprofilesindices(profiles, direction)
 
@@ -850,14 +886,31 @@ def smooth(
     if not self.getregionsbytypes([RegionCast, RegionProfile]):
         dataIndices = self.getdataseriesindices()
     else:
+        profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
         if direction == "both":
-            dataIndices = []
             up = self.getprofilesindices(profiles, "up")
             down = self.getprofilesindices(profiles, "down")
-            assert len(up) == len(down)
-            for i in range(len(up)):
-                dataIndices.append(down[i])
-                dataIndices.append(up[i])
+            dataIndices = []
+
+            if len(up) == len(down):
+                for i in range(len(up)):
+                    if profileRegions[0][0].isdowncast():
+                        dataIndices.append(down[i])
+                        dataIndices.append(up[i])
+                    else:
+                        dataIndices.append(up[i])
+                        dataIndices.append(down[i])
+            else:
+                for i in range(min(len(up), len(down))):
+                    if len(up) > len(down):
+                        dataIndices.append(up[i])
+                        dataIndices.append(down[i])
+                    else:
+                        dataIndices.append(down[i])
+                        dataIndices.append(up[i])
+
+                lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+                dataIndices.append(lastprofile) 
         else:
             dataIndices = self.getprofilesindices(profiles, direction)
 
@@ -955,14 +1008,32 @@ def removeloops(
             f"There is no profiles in .rsk file. RSKremoveloops only applies to profile data."
         )
     else:
+        profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
         if direction == "both":
-            profileIndices = []
             up = self.getprofilesindices(profiles, "up")
             down = self.getprofilesindices(profiles, "down")
-            assert len(up) == len(down)
-            for i in range(len(up)):
-                profileIndices.append(down[i])
-                profileIndices.append(up[i])
+            profileIndices = []
+
+            if len(up) == len(down):
+                for i in range(len(up)):
+                    if profileRegions[0][0].isdowncast():
+                        profileIndices.append(down[i])
+                        profileIndices.append(up[i])
+                    else:
+                        profileIndices.append(up[i])
+                        profileIndices.append(down[i])
+            else:
+                for i in range(min(len(up), len(down))):
+                    if len(up) > len(down):
+                        profileIndices.append(up[i])
+                        profileIndices.append(down[i])
+                    else:
+                        profileIndices.append(down[i])
+                        profileIndices.append(up[i])
+
+                lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+                profileIndices.append(lastprofile) 
+
         else:
             profileIndices = self.getprofilesindices(profiles, direction)
 
@@ -1183,14 +1254,32 @@ def correctTM(
     temperature = self.data[Temperature.longName]
     conductivity = self.data[Conductivity.longName]
 
+    profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
     if direction == "both":
-        profileIndices = []
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
+        profileIndices = []
+
+        if len(up) == len(down):
+            for i in range(len(up)):
+                if profileRegions[0][0].isdowncast():
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+                else:
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+        else:
+            for i in range(min(len(up), len(down))):
+                if len(up) > len(down):
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+                else:
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            profileIndices.append(lastprofile) 
+
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
 
@@ -1299,17 +1388,34 @@ def correcttau(
     timestamp = self.data["timestamp"]
     channelData = self.data[channel]
 
+    profileRegions = self.getprofilesorerror(profiles)  # ensure profiles exist
     if direction == "both":
-        profileIndices = []
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
+        profileIndices = []
+
+        if len(up) == len(down):
+            for i in range(len(up)):
+                if profileRegions[0][0].isdowncast():
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+                else:
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+        else:
+            for i in range(min(len(up), len(down))):
+                if len(up) > len(down):
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+                else:
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            profileIndices.append(lastprofile)
+
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
-    # profileIndices = self.getprofilesindices(profiles, direction)
 
     dt = self.scheduleInfo.samplingperiod()
     with np.errstate(divide="ignore"):
