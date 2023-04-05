@@ -40,10 +40,10 @@ def getprofilesorerror(
     """Get profile regions.
 
     Args:
-        profiles (Union[int, Collection[int]], optional): _description_. Defaults to [].
+        profiles (Union[int, Collection[int]], optional): the profile(s) to select. Defaults to [] (all profiles).
 
     Returns:
-        List[Tuple[RegionCast, RegionCast, RegionProfile]]: tuple of (RegionCast<DOWNCAST>,  RegionCast<UPCAST>, RegionProfile)
+        List[Tuple[RegionCast, RegionCast, RegionProfile]]: tuple of (RegionCast,  RegionCast, RegionProfile)
 
     Get relevant profile regions (e.g., those from RSK.regions), returning a list of tuples. Each tuple
     contains the regions relating to each profile. Tries to get all profiles if profiles is []. If no
@@ -58,15 +58,15 @@ def getprofilesorerror(
     # Turn profiles into a set (potentially empty) for consistency
     profiles = set(profiles) if hasattr(profiles, "__iter__") else {profiles}  # type: ignore
     # We assume RSK.regions is always a sorted immutable tuple.
-    # From `attributes.informational.Region`, we know sorting will always result in
+    # From `Region`, we know sorting will always result in
     # each RegionProfile coming after both of its related RegionCasts
     # (because they have a larger tstamp2). The order will be:
-    # (RegionCast<DOWNCAST>,  RegionCast<UPCAST>, RegionProfile)
+    # (RegionCast, RegionCast, RegionProfile)
     for region in self.regions:
         if isinstance(region, RegionCast):
-            if region.regionType == "DOWN":
+            if region.isdowncast():
                 downRegion = region
-            elif region.regionType == "UP":
+            elif region.isupcast():
                 upRegion = region
         elif isinstance(region, RegionProfile):
             if not downRegion or not upRegion:

@@ -2,30 +2,31 @@ image: python:3.8.0
 
 definitions:
     steps:
+        - pip install --upgrade pip
         - step: &formatCheck
-            name: Format check
-            caches:
-                - pip
-            script:
-                - pip install black
-                - make format-check
+              name: Format check
+              caches:
+                  - pip
+              script:
+                  - pip install black==22.10.0
+                  - make format-check
         - step: &typeCheck
-            name: Type check
-            caches:
-                - pip
-            script:
-                - pip install .
-                - pip install mypy==0.982
-                - make type-check
+              name: Type check
+              caches:
+                  - pip
+              script:
+                  - pip install .
+                  - pip install mypy==0.982
+                  - make type-check
         - step: &unitTest
-            name: Unit test
-            caches:
-                - pip
-                - rsks
-            script:
-                - apt -y update && apt install -y git-lfs
-                - pip install .
-                - make test
+              name: Unit test
+              caches:
+                  - pip
+                  - rsks
+              script:
+                  - apt -y update && apt install -y git-lfs
+                  - pip install .
+                  - make test
     caches:
         rsks: tests/rsks/
 
@@ -33,12 +34,12 @@ pipelines:
     branches:
         master:
             - parallel:
-                - step: *formatCheck
-                - step: *typeCheck
-                - step: *unitTest
+                  - step: *formatCheck
+                  - step: *typeCheck
+                  - step: *unitTest
     pull-requests:
-        '**':
+        "**":
             - parallel:
-                - step: *formatCheck
-                - step: *typeCheck
-                - step: *unitTest
+                  - step: *formatCheck
+                  - step: *typeCheck
+                  - step: *unitTest
