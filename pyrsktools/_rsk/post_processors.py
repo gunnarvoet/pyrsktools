@@ -71,14 +71,32 @@ def calculateCTlag(
     temperature = self.data[Temperature.longName]
     seaPressure = self.data[SeaPressure.longName]
 
+    profileRegions = self.getprofilesorerror(profiles) # ensure profiles exist
     if direction == "both":
-        profileIndices = []
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
+        profileIndices = []
+        
+        if len(up) == len(down):
+            for i in range(len(up)):
+                if profileRegions[0][0].isdowncast():
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+                else:
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+        else:
+            for i in range(min(len(up),len(down))):
+                if len(up)>len(down):
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+                else:
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            profileIndices.append(lastprofile)  # type:ignore
+
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
 
@@ -201,14 +219,32 @@ def alignchannel(
 
     lag = utils.intoarray(lag)
 
+    profileRegions = self.getprofilesorerror(profiles) # ensure profiles exist
     if direction == "both":
-        profileIndices = []
         up = self.getprofilesindices(profiles, "up")
         down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
+        profileIndices = []
+        
+        if len(up) == len(down):
+            for i in range(len(up)):
+                if profileRegions[0][0].isdowncast():
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+                else:
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+        else:
+            for i in range(min(len(up),len(down))):
+                if len(up)>len(down):
+                    profileIndices.append(up[i])
+                    profileIndices.append(down[i])
+                else:
+                    profileIndices.append(down[i])
+                    profileIndices.append(up[i])
+
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            profileIndices.append(lastprofile)  # type:ignore
+
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
 

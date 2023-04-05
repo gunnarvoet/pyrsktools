@@ -16,7 +16,7 @@ from pyrsktools import channels
 from pyrsktools._rsk.read import getprofilesindices
 from pyrsktools.channels import *
 from pyrsktools.datatypes import *
-from common import RSK_FILES
+from common import RSK_FILES, RSK_FILES_PROFILING
 from common import MATLAB_RSK, GOLDEN_RSK, MATLAB_RSK_MOOR, BPR_RSK
 from common import (
     readMatlabFile,
@@ -49,6 +49,15 @@ class TestPostProcessors(unittest.TestCase):
             ]
             lags = rsk.calculateCTlag(profiles=range(15))
             self.assertEqual(lags, expected)
+
+        # ----- Generic RSK tests -----
+        for f in RSK_FILES_PROFILING:
+            #print(f)
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.deriveseapressure()
+                lags = rsk.calculateCTlag(direction="both")
+                #print(lags)
 
     def test_alignchannel(self):
         # ----- Matlab RSK tests -----
@@ -95,6 +104,15 @@ class TestPostProcessors(unittest.TestCase):
 
             for pyProfileData, mProfileData in getProfileData(rsk, mRSK):
                 self.assertTrue(np.equal(pyProfileData, mProfileData).all())
+
+        # ----- Generic RSK tests -----
+        for f in RSK_FILES_PROFILING:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.deriveseapressure()
+                if rsk.channelexists(Conductivity):
+                    lags = rsk.calculateCTlag(direction="both")
+                    rsk.alignchannel(channel=Conductivity.longName,lag=lags)
 
     def test_correcthold(self):
         mRSK = readMatlabProfileDataWithNaN("RSKcorrecthold_nan_corrected.json")
@@ -354,6 +372,13 @@ class TestPostProcessors(unittest.TestCase):
                 pyData = rsk.data[pyChannels[i]]
                 self.assertTrue(np.allclose(pyData, mData, atol=1e-7, equal_nan=True))
                 print("test2 pass: ", mChannels[i])
+
+        # ----- Generic RSK tests (profiling) -----
+        for f in RSK_FILES_PROFILING:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.deriveseapressure()
+                _ = rsk.binaverage(direction="down", binSize=[10, 50], boundary=[10, 50, 300])
 
     def test_generate2D(self):
         with RSK(MATLAB_RSK.as_posix()) as rsk:
