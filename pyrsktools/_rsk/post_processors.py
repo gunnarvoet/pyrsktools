@@ -910,7 +910,7 @@ def smooth(
                         dataIndices.append(up[i])
 
                 lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
-                dataIndices.append(lastprofile) 
+                dataIndices.append(lastprofile)
         else:
             dataIndices = self.getprofilesindices(profiles, direction)
 
@@ -1032,7 +1032,7 @@ def removeloops(
                         profileIndices.append(up[i])
 
                 lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
-                profileIndices.append(lastprofile) 
+                profileIndices.append(lastprofile)
 
         else:
             profileIndices = self.getprofilesindices(profiles, direction)
@@ -1278,7 +1278,7 @@ def correctTM(
                     profileIndices.append(up[i])
 
             lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
-            profileIndices.append(lastprofile) 
+            profileIndices.append(lastprofile)
 
     else:
         profileIndices = self.getprofilesindices(profiles, direction)
