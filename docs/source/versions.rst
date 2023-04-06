@@ -29,11 +29,11 @@ pyRSKtools legacy versions
 ==========================
 
 The legacy versions of pyRSKtools (v0.1.9 and before) are no longer maintained moving forward. But the legacy version (v0.1.9) is available in `PyPI`_. 
-Users with existing codes based on pyRSKtools (v0.1.8) may install the legacy version by specifying the version number:
+Users with existing codes based on pyRSKtools (v0.1.9) may install the legacy version by specifying the version number:
 
 .. code-block:: bash
 
-    python -m pip install pyrsktools == 0.1.9
+    python -m pip install pyrsktools==0.1.9
 
 .. _RUSKIN: https://rbr-global.com/products/software/
 .. _PyPI: https://pypi.org/project/pyRSKtools/0.1.9/

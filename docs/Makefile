@@ -21,7 +21,7 @@ help:
 
 serve: 
 	$(MAKE) html
-	python -m http.server -d $(BUILDDIR)/html
+	python3 -m http.server -d $(BUILDDIR)/html
 
 watch:
 	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
