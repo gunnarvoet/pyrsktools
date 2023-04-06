@@ -548,7 +548,9 @@ class Region:
         if not isinstance(other, Region):
             return NotImplemented
 
-        return bool(self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2)
+        return bool(
+            self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2
+        )  # and self.type == other.type)
 
     def __ne__(self: Region, other: object) -> bool:
         if not isinstance(other, Region):
@@ -563,6 +565,7 @@ class Region:
         return bool(
             (self.tstamp1 > other.tstamp1 and self.tstamp2 > other.tstamp2)
             or (self.tstamp1 <= other.tstamp1 and self.tstamp2 >= other.tstamp2)
+            # or (self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2 and self.type > other.type)
         )
 
     def __lt__(self: Region, other: object) -> bool:
@@ -572,6 +575,7 @@ class Region:
         return bool(
             (self.tstamp1 < other.tstamp1 and self.tstamp2 < other.tstamp2)
             or (self.tstamp1 >= other.tstamp1 and self.tstamp2 <= other.tstamp2)
+            # or (self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2 and self.type < other.type)
         )
 
 

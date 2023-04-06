@@ -34,6 +34,7 @@ class RSK:
         readdata,
         computeprofiles,
         getprofilesindices,
+        getprofilesindicessortedbycast,
         getdataseriesindices,
         readprocesseddata,
         csv2rsk,
@@ -306,7 +307,9 @@ class RSK:
         """When trying to set the `regions` property, sort the given list then
         cast it into a tuple before setting the internal private instance variable.
         """
-        regions.sort()
+        regions.sort(
+            key=lambda x: (x.tstamp2, x.type)
+        )  # first sorted by tstamp2, then sorted by type to ensure CAST listed in front of PROFILE
         self._regions = tuple(regions)  # type: ignore
 
 

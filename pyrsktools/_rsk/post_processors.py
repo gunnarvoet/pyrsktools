@@ -71,16 +71,7 @@ def calculateCTlag(
     temperature = self.data[Temperature.longName]
     seaPressure = self.data[SeaPressure.longName]
 
-    if direction == "both":
-        profileIndices = []
-        up = self.getprofilesindices(profiles, "up")
-        down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
-    else:
-        profileIndices = self.getprofilesindices(profiles, direction)
+    profileIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
 
     lag = []
     for indices in profileIndices:
@@ -201,16 +192,7 @@ def alignchannel(
 
     lag = utils.intoarray(lag)
 
-    if direction == "both":
-        profileIndices = []
-        up = self.getprofilesindices(profiles, "up")
-        down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
-    else:
-        profileIndices = self.getprofilesindices(profiles, direction)
+    profileIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
 
     castNumber = len(profileIndices)
 
@@ -586,16 +568,8 @@ def correcthold(
     self.dataexistsorerror()
     self.channelsexistorerror(channels)
 
-    if direction == "both":
-        profileIndices = []
-        up = self.getprofilesindices(profiles, "up")
-        down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
-    else:
-        profileIndices = self.getprofilesindices(profiles, direction)
+    profileIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
+
     channelNames, _ = self.getchannelnamesandunits(channels)
 
     holdpts = {}
@@ -718,16 +692,7 @@ def despike(
     if not self.getregionsbytypes([RegionCast, RegionProfile]):
         dataIndices = self.getdataseriesindices()
     else:
-        if direction == "both":
-            dataIndices = []
-            up = self.getprofilesindices(profiles, "up")
-            down = self.getprofilesindices(profiles, "down")
-            assert len(up) == len(down)
-            for i in range(len(up)):
-                dataIndices.append(down[i])
-                dataIndices.append(up[i])
-        else:
-            dataIndices = self.getprofilesindices(profiles, direction)
+        dataIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
 
     spikepts = {}
 
@@ -814,16 +779,7 @@ def smooth(
     if not self.getregionsbytypes([RegionCast, RegionProfile]):
         dataIndices = self.getdataseriesindices()
     else:
-        if direction == "both":
-            dataIndices = []
-            up = self.getprofilesindices(profiles, "up")
-            down = self.getprofilesindices(profiles, "down")
-            assert len(up) == len(down)
-            for i in range(len(up)):
-                dataIndices.append(down[i])
-                dataIndices.append(up[i])
-        else:
-            dataIndices = self.getprofilesindices(profiles, direction)
+        dataIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
 
     for i in range(len(channelNames)):
         for indices in dataIndices:
@@ -919,16 +875,7 @@ def removeloops(
             f"There is no profiles in .rsk file. RSKremoveloops only applies to profile data."
         )
     else:
-        if direction == "both":
-            profileIndices = []
-            up = self.getprofilesindices(profiles, "up")
-            down = self.getprofilesindices(profiles, "down")
-            assert len(up) == len(down)
-            for i in range(len(up)):
-                profileIndices.append(down[i])
-                profileIndices.append(up[i])
-        else:
-            profileIndices = self.getprofilesindices(profiles, direction)
+        profileIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
 
     flagIndices = np.array([], dtype="int64")
     for i, indices in enumerate(profileIndices):
@@ -1147,16 +1094,7 @@ def correctTM(
     temperature = self.data[Temperature.longName]
     conductivity = self.data[Conductivity.longName]
 
-    if direction == "both":
-        profileIndices = []
-        up = self.getprofilesindices(profiles, "up")
-        down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
-    else:
-        profileIndices = self.getprofilesindices(profiles, direction)
+    profileIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
 
     for indices in profileIndices:
         correction = _correctTM(temperature[indices], timestamp[indices], a, b, gamma)
@@ -1263,17 +1201,7 @@ def correcttau(
     timestamp = self.data["timestamp"]
     channelData = self.data[channel]
 
-    if direction == "both":
-        profileIndices = []
-        up = self.getprofilesindices(profiles, "up")
-        down = self.getprofilesindices(profiles, "down")
-        assert len(up) == len(down)
-        for i in range(len(up)):
-            profileIndices.append(down[i])
-            profileIndices.append(up[i])
-    else:
-        profileIndices = self.getprofilesindices(profiles, direction)
-    # profileIndices = self.getprofilesindices(profiles, direction)
+    profileIndices = self.getprofilesindicessortedbycast(profiles=profiles, direction=direction)
 
     dt = self.scheduleInfo.samplingperiod()
     with np.errstate(divide="ignore"):
