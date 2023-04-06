@@ -622,6 +622,62 @@ def getprofilesindices(
     return profileDataIndices
 
 
+def getprofilesindicessortedbycast(
+    self: RSK, profiles: Union[int, Collection[int]] = [], direction: str = "both"
+) -> List[List[int]]:
+    """Get a list of indices for each cast direction used to index into :obj:`RSK.data`.
+
+    Args:
+        profiles (Union[int, Collection[int]], optional): profile number(s) to select. Defaults to [] (all profiles).
+        direction (str, optional): cast direction of either "up", "down", or "both". Defaults to "both".
+
+    Returns:
+        List[List[int]]: a list of cast indices; each element in the returned list is a list
+        itself which may be used to index into :obj:`RSK.data`.
+
+    This method quickly computes a list (of lists) of indices into :obj:`RSK.data` for each profile/cast
+    using the metadata in :obj:`RSK.regions`.
+
+    Example:
+
+    >>> allcastIndices = rsk.getprofilesindicessortedbycast()
+    ... upcastIndices = rsk.getprofilesindices(direction="up")
+    ... firstDowncastIndices = rsk.getprofilesindices(profiles=1, direction="down")
+    """
+    if profiles is None:
+        raise TypeError("Type of 'None' invalid. Use an empty list ([]) to select all profiles.")
+
+    if not self.regions:
+        raise ValueError(
+            "No profile regions in the current RSK instance. Please see rsk.computeprofiles()."
+        )
+
+    if self.data.size == 0:
+        raise ValueError("No data in the current RSK instance")
+
+    profileRegions = self.getprofilesorerror(profiles)
+    if direction == "both":
+        up = self.getprofilesindices(profiles, "up")
+        down = self.getprofilesindices(profiles, "down")
+        indices_bycasts = []
+
+        for i in range(min(len(up), len(down))):
+            if profileRegions[0][0].isdowncast():
+                indices_bycasts.append(down[i])
+                indices_bycasts.append(up[i])
+            else:
+                indices_bycasts.append(up[i])
+                indices_bycasts.append(down[i])
+
+        if len(up) != len(down):
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            indices_bycasts.append(lastprofile)
+    else:
+        indices_bycasts = self.getprofilesindices(profiles, direction)
+
+    return indices_bycasts
+
+
 def getdataseriesindices(self: RSK) -> List[List[int]]:
     """Get a list of all the indices of :obj:`RSK.data`.
 

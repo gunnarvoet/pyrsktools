@@ -34,6 +34,7 @@ class RSK:
         readdata,
         computeprofiles,
         getprofilesindices,
+        getprofilesindicessortedbycast,
         getdataseriesindices,
         readprocesseddata,
         csv2rsk,
