@@ -1,6 +1,9 @@
 ############################
-Supported RSK versions
+Versions
 ############################
+
+Supported RSK versions
+======================
 
 RSK files have different types and versions,
 either of which may lead to differences in the underlying dataset structure.
@@ -22,4 +25,15 @@ pyRSKtools currently supports RSKs that are:
 
     * After clicking the ``Update`` button, a new RSK file of the latest version will be created in your specified directory. 
 
+pyRSKtools legacy versions
+==========================
+
+The legacy versions of pyRSKtools (v0.1.9 and before) are no longer maintained moving forward. But the legacy version (v0.1.9) is available in `PyPI`_. 
+Users with existing codes based on pyRSKtools (v0.1.8) may install the legacy version by specifying the version number:
+
+.. code-block:: bash
+
+    python -m pip install pyrsktools == 0.1.9
+
 .. _RUSKIN: https://rbr-global.com/products/software/
+.. _PyPI: https://pypi.org/project/pyRSKtools/0.1.9/
