@@ -641,8 +641,6 @@ def getprofilesindicessortedbycast(
     Example:
 
     >>> allcastIndices = rsk.getprofilesindicessortedbycast()
-    ... upcastIndices = rsk.getprofilesindices(direction="up")
-    ... firstDowncastIndices = rsk.getprofilesindices(profiles=1, direction="down")
     """
     if profiles is None:
         raise TypeError("Type of 'None' invalid. Use an empty list ([]) to select all profiles.")
