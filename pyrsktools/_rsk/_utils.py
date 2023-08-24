@@ -126,7 +126,9 @@ def channelsexistorerror(
             raise ValueError(f'Data does not contain required channel: "{channelName}"')
 
 
-def appendchannel(self: RSK, channel: Channel, data: npt.NDArray) -> None:
+def appendchannel(
+    self: RSK, channel: Channel, data: npt.NDArray, isMeasured: int, isDerived: int
+) -> None:
     """Given an instance of :class:`Channel` and data to be populated as a column in
     :param:`RSK.data`, this method will take the channel instance, assign it
     an appropriate channelID, append the channel to :param:`RSK.channels`,
@@ -144,7 +146,11 @@ def appendchannel(self: RSK, channel: Channel, data: npt.NDArray) -> None:
             self.data, channel.longName, data, "float64", fill_value=np.nan, usemask=False
         )
         self.channels.append(
-            channel.withnewid(max(self.channels, key=lambda ch: ch.channelID).channelID + 1)
+            channel.withnewparams(
+                channelID=max(self.channels, key=lambda ch: ch.channelID).channelID + 1,
+                isMeasured=isMeasured,
+                isDerived=isDerived,
+            )
         )
 
 

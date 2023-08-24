@@ -56,7 +56,7 @@ def derivesalinity(self: RSK, seawaterLibrary: str = "TEOS-10") -> None:
     else:
         raise ValueError(f"Invoked with unsupported seawater library: {seawaterLibrary}")
 
-    self.appendchannel(Salinity, salinity)
+    self.appendchannel(Salinity, salinity, 0, 1)
     self.appendlog(f"Practical Salinity derived using {seawaterLibrary} library")
 
 
@@ -112,7 +112,7 @@ def deriveseapressure(self: RSK, patm: Optional[Union[float, Collection[float]]]
         self.printwarning("No pressure channel available, sea pressure will be set to 0.")
         seapressure = np.zeros(self.data.size, "float64")
 
-    self.appendchannel(SeaPressure, seapressure)
+    self.appendchannel(SeaPressure, seapressure, 0, 1)
 
     if hasattr(patm, "__len__"):
         self.appendlog("Sea pressure calculated using variable atmospheric pressure values.")
@@ -151,7 +151,7 @@ def derivedepth(self: RSK, latitude: float = 45.0, seawaterLibrary: str = "TEOS-
     else:
         raise ValueError(f"Invoked with unsupported seawater library: {seawaterLibrary}")
 
-    self.appendchannel(Depth, depth)
+    self.appendchannel(Depth, depth, 0, 1)
     self.appendlog(
         f"Depth calculated using the {seawaterLibrary} library and a latitude of {latitude} degrees"
     )
@@ -186,7 +186,7 @@ def derivevelocity(self: RSK, windowLength: int = 3) -> None:
     depth = utils.runavg(self.data[Depth.longName], windowLength, "nan")
     velocity = utils.calculatevelocity(depth, self.data["timestamp"])
 
-    self.appendchannel(Velocity, velocity)
+    self.appendchannel(Velocity, velocity, 0, 1)
     self.appendlog(
         f"Profiling velocity calculated from depth, filtered with a windowLength of {windowLength} samples."
     )
@@ -220,7 +220,7 @@ def deriveC25(self: RSK, alpha: float = 0.0191) -> None:
     specificConductivity = conductivity / (1 + alpha * (temperature - 25))
     specificConductivity *= 1000  # Convert unit from mS/cm to µS/cm
 
-    self.appendchannel(SpecificConductivity, specificConductivity)
+    self.appendchannel(SpecificConductivity, specificConductivity, 0, 1)
     self.appendlog(
         f"Specific conductivity at 25 degrees Celsius derived using a temperature sensitivity coefficient of {alpha} deg C⁻¹."
     )
@@ -313,8 +313,8 @@ def deriveBPR(self: RSK) -> None:
             derivedTChannel = derivedTChannel.withnewname(f"{derivedTChannel.longName}{nBPR}")
             nBPR += 1
 
-        self.appendchannel(derivedPChannel, pres)
-        self.appendchannel(derivedTChannel, temp)
+        self.appendchannel(derivedPChannel, pres, 0, 1)
+        self.appendchannel(derivedTChannel, temp, 0, 1)
 
     self.appendlog("BPR temperature and pressure derived from period data.")
 
@@ -364,7 +364,7 @@ def _deriveconcentration(self: RSK, unit: str) -> None:
         units=unit,
         _dbName="Dissolved O₂ concentration",
     )
-    self.appendchannel(channel, concentration)
+    self.appendchannel(channel, concentration, 0, 1)
     self.appendlog(f"O2 concentration in units of {unit} derived from measured O2 saturation.")
 
 
@@ -411,7 +411,7 @@ def _derivesaturation(self: RSK) -> None:
     else:
         raise ValueError(f"Invalid/unsupported unit for O2 concentration: {unit}")
 
-    self.appendchannel(DissolvedO2Saturation, saturation)
+    self.appendchannel(DissolvedO2Saturation, saturation, 0, 1)
     self.appendlog(
         f"O2 saturation in units of {DissolvedO2Saturation.units} derived from measured O2 concentration."
     )
@@ -498,8 +498,8 @@ def derivebuoyancy(self: RSK, latitude: float = 45.0, seawaterLibrary: str = "TE
     else:
         raise ValueError(f"Invoked with unsupported seawater library: {seawaterLibrary}")
 
-    self.appendchannel(BuoyancyFrequencySquared, buoyancy)
-    self.appendchannel(Stability, stability)
+    self.appendchannel(BuoyancyFrequencySquared, buoyancy, 0, 1)
+    self.appendchannel(Stability, stability, 0, 1)
     self.appendlog(
         f"Buoyancy frequency squared and stability derived using the {seawaterLibrary} library."
     )
@@ -604,7 +604,7 @@ def derivesigma(
     else:
         raise ValueError(f"Invoked with unsupported seawater library: {seawaterLibrary}")
 
-    self.appendchannel(DensityAnomaly, densityAnomaly)
+    self.appendchannel(DensityAnomaly, densityAnomaly, 0, 1)
     self.appendlog(f"Potential density anomaly derived using the {seawaterLibrary} library.")
 
 
@@ -652,7 +652,7 @@ def deriveSA(
     else:
         raise ValueError(f"Invoked with unsupported seawater library: {seawaterLibrary}")
 
-    self.appendchannel(AbsoluteSalinity, absoluteSalinity)
+    self.appendchannel(AbsoluteSalinity, absoluteSalinity, 0, 1)
     self.appendlog(f"Absolute salinity derived using the {seawaterLibrary} library.")
 
 
@@ -709,7 +709,7 @@ def derivetheta(
     else:
         raise ValueError(f"Invoked with unsupported seawater library: {seawaterLibrary}")
 
-    self.appendchannel(PotentialTemperature, potentialTemperature)
+    self.appendchannel(PotentialTemperature, potentialTemperature, 0, 1)
     self.appendlog(f"Potential temperature derived using the {seawaterLibrary} library.")
 
 
@@ -883,7 +883,7 @@ def derivesoundspeed(self: RSK, soundSpeedAlgorithm: str = "UNESCO") -> None:
     else:
         raise ValueError(f"Invoked with an unsupported algorithm: {soundSpeedAlgorithm}")
 
-    self.appendchannel(SpeedOfSound, speedOfSound)
+    self.appendchannel(SpeedOfSound, speedOfSound, 0, 1)
     self.appendlog(f"Speed of sound derived using the {soundSpeedAlgorithm} algorithm.")
 
 
@@ -977,14 +977,18 @@ def deriveA0A(self: RSK) -> None:
             self.appendchannel(
                 BprCorrectedPressure.withnewname(f"{BprCorrectedPressure.longName}{n}"),
                 bprCorrection,
+                0,
+                1,
             )
             self.appendchannel(
                 PressureDrift.withnewname(f"{PressureDrift.longName}{n}"),
                 pressureCorrection,
+                0,
+                1,
             )
         else:
-            self.appendchannel(BprCorrectedPressure, bprCorrection)
-            self.appendchannel(PressureDrift, pressureCorrection)
+            self.appendchannel(BprCorrectedPressure, bprCorrection, 0, 1)
+            self.appendchannel(PressureDrift, pressureCorrection, 0, 1)
 
         self.appendlog("BPR pressure(s) corrected for drift using barometer readings.")
 
@@ -1153,9 +1157,9 @@ def deriveAPT(
     accX, accY, accZ = _alignParos(accX, accY, accZ, Alignment_coefficients)
     temp = (tempX + tempY + tempZ) / 3
 
-    self.appendchannel(AccelerationX, accX)
-    self.appendchannel(AccelerationY, accY)
-    self.appendchannel(AccelerationZ, accZ)
-    self.appendchannel(AccelerometerTemperature, temp)
+    self.appendchannel(AccelerationX, accX, 0, 1)
+    self.appendchannel(AccelerationY, accY, 0, 1)
+    self.appendchannel(AccelerationZ, accZ, 0, 1)
+    self.appendchannel(AccelerometerTemperature, temp, 0, 1)
 
     self.appendlog("APT accelerations and temperature derived from period data.")
