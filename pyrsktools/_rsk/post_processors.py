@@ -1009,9 +1009,7 @@ def trim(
         nonTrimIndices = indices[np.logical_or(refData < range[0], refData > range[1])]
 
         if trimIndices.size > 0:
-            if action == "remove":
-                self.data = np.delete(self.data, trimIndices)
-            elif action == "interp":
+            if action == "interp":
                 if nonTrimIndices.size > 0:
                     for channelName in channelNames:
                         self.data[channelName][trimIndices] = interp1d(
@@ -1024,6 +1022,9 @@ def trim(
                     self.data[channelName][trimIndices] = np.nan
 
             trimmedIndices.update(trimIndices.tolist())
+
+    if action == "remove":
+        self.data = np.delete(self.data, np.array(list(trimmedIndices), dtype=int))
 
     return list(trimmedIndices)
 

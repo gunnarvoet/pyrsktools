@@ -52,12 +52,12 @@ class TestPostProcessors(unittest.TestCase):
 
         # ----- Generic RSK tests -----
         for f in RSK_FILES_PROFILING:
-            #print(f)
+            # print(f)
             with RSK(f.as_posix()) as rsk:
                 rsk.readdata()
                 rsk.deriveseapressure()
                 lags = rsk.calculateCTlag(direction="both")
-                #print(lags)
+                # print(lags)
 
     def test_alignchannel(self):
         # ----- Matlab RSK tests -----
@@ -112,7 +112,7 @@ class TestPostProcessors(unittest.TestCase):
                 rsk.deriveseapressure()
                 if rsk.channelexists(Conductivity):
                     lags = rsk.calculateCTlag(direction="both")
-                    rsk.alignchannel(channel=Conductivity.longName,lag=lags)
+                    rsk.alignchannel(channel=Conductivity.longName, lag=lags)
 
     def test_correcthold(self):
         mRSK = readMatlabProfileDataWithNaN("RSKcorrecthold_nan_corrected.json")
@@ -147,7 +147,7 @@ class TestPostProcessors(unittest.TestCase):
                         np.allclose(mData[mask], pyData[mask], atol=1e-6, equal_nan=True)
                     )
                 print("pass (action interp)", pyChannels[chan])
-        
+
         # ----- Generic RSK tests (profiling) -----
         for f in RSK_FILES_PROFILING:
             with RSK(f.as_posix()) as rsk:
@@ -250,6 +250,7 @@ class TestPostProcessors(unittest.TestCase):
 
     def test_trim(self):
         # ----- Matlab RSK tests -----
+        # ----- Trim by timestamps -----
         with RSK(MATLAB_RSK.as_posix()) as rsk:
             rsk.readdata()
 
@@ -296,12 +297,23 @@ class TestPostProcessors(unittest.TestCase):
             )
             self.assertEqual(rsk.data.size, originalSize - len(trimmedIndices))
 
-        # Comparison test
+        # ----- Comparison test: trim by sea pressure -----
+        # --- action = nan ---
         with RSK(MATLAB_RSK.as_posix()) as rsk:
             rsk.readdata()
             rsk.deriveseapressure()
             mRSK = readMatlabProfileDataWithNaN("RSKtrim_corrected.json")
             rsk.trim(reference=SeaPressure.longName, range=[-1, 1], action="nan")
+            for pyProfileData, mProfileData in getProfileData(rsk, mRSK):
+                self.assertTrue(
+                    np.allclose(pyProfileData, mProfileData, atol=1e-12, equal_nan=True)
+                )
+        # --- action = remove ---
+        with RSK(MATLAB_RSK.as_posix()) as rsk:
+            rsk.readdata()
+            rsk.deriveseapressure()
+            mRSK = readMatlabProfileDataWithNaN("RSKtrim_corrected_remove.json")
+            rsk.trim(reference=SeaPressure.longName, range=[-1, 1], action="remove")
             for pyProfileData, mProfileData in getProfileData(rsk, mRSK):
                 self.assertTrue(
                     np.allclose(pyProfileData, mProfileData, atol=1e-12, equal_nan=True)
@@ -534,7 +546,9 @@ class TestPostProcessors(unittest.TestCase):
         for f in RSK_FILES:
             with RSK(f.as_posix()) as rsk:
                 rsk.readdata()
-                _ = rsk.despike(channels=rsk.channelNames[0],action="interp", threshold=4, windowLength=11)
+                _ = rsk.despike(
+                    channels=rsk.channelNames[0], action="interp", threshold=4, windowLength=11
+                )
 
     def test_removeloops(self):
         # there's no channelIDs for derived channels in mRSK file, get errors when using getProfileData, so manually loop the channels
