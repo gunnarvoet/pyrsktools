@@ -83,16 +83,23 @@ def open(self: RSK) -> None:
 
             isStored = False if channelStatus[channel.channelID] & 0x04 else True
             isHidden = True if channelStatus[channel.channelID] & 0x01 else False
+            isStreamed = False if channelStatus[channel.channelID] & 0x08 else True
 
             if self._readHiddenChannels:
                 if not isBPR and not isStored:
                     toDelete.append(channel.channelID)
+                else:
+                    if not isStreamed and not isStored:  # e.g., status == 12
+                        toDelete.append(channel.channelID)
             else:
                 if not isStored or isHidden:
                     toDelete.append(channel.channelID)
 
         if len(toDelete) > 0:
             self.channels = [c for c in self.channels if c.channelID not in toDelete]
+            self.instrumentChannels = [
+                c for c in self.instrumentChannels if c.channelID not in toDelete
+            ]
 
     self.appendlog(f"{self.filename} opened using pyRSKtools v{self.version}.")
 

@@ -127,6 +127,10 @@ class TestRead(unittest.TestCase):
                 if rsk.dbInfo.type == "EPdesktop":
                     if semver2int(rsk.dbInfo.version) >= semver2int("2.10.0"):
                         self.assertIsNotNone(rsk.calibrations[0].c)
+                # InstrumentChannels
+                self.assertTrue(
+                    not any(item.channelStatus == 12 for item in rsk.instrumentChannels)
+                )
 
         # ----- RSK version tests -----
         for f in RSK_FILES_VERSION:
