@@ -185,8 +185,8 @@ def addchannel(
     data: Collection[float],
     channel: str = "unknown",
     units: str = "unknown",
-    isMeasured: int = 0,
-    isDerived: int = 0,
+    isMeasured: bool = None,
+    isDerived: int = None,
 ) -> None:
     """Add a new channel with a defined channel name and unit. If the new channel already
     exists in the current RSK instance, it will overwrite the old one.
@@ -195,8 +195,8 @@ def addchannel(
         data (npt.NDArray): Array containing the data to be added.
         channel (str, optional): name of the added channel. Defaults to "unknown".
         unit (str, optional): unit of the added channel. Defaults to "unknown".
-        isMeasured (int, optional): whether the added channel is directly measured. Defaults to "0", not measured.
-        isDerived (int,optional): whether the added channel is derived from other channels. Defaults to "0", not derived.
+        isMeasured (bool, optional): whether the added channel is directly measured. Defaults to "None", unknown.
+        isDerived (bool,optional): whether the added channel is derived from other channels. Defaults to "None", unknown.
 
     Adds a new channel with a defined channel name and unit. If the new channel already exists in the :class:`RSK` structure,
     it will overwrite the old one.
@@ -210,7 +210,7 @@ def addchannel(
     >>> # In this example we compute Absolute Salinity and add it to an :class:`RSK` instance
     ... # using the TEOS-10 GSW function "SA_from_SP".
     ... data = gsw.SA_from_SP(rsk.data["salinity"], rsk.data["sea_pressure"], -150, 49)
-    ... rsk.addchannel(data, "absolute_salinity", units="g/kg", isMeasured = 0, isDerived = 1)
+    ... rsk.addchannel(data, "absolute_salinity", units="g/kg", isMeasured = False, isDerived = True)
     """
     self.dataexistsorerror()
 

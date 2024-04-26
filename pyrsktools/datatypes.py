@@ -151,8 +151,8 @@ class Channel:
         shortName (str): Defaults to None.
         longName (str): Defaults to None.
         unitsPlainText (str): Defaults to None.
-        isMeasured (int): Defaults to None.
-        isDerived (int): Defaults to None.
+        isMeasured (bool): Defaults to None.
+        isDerived (bool): Defaults to None.
         units (str): Defaults to None.
         label (str): Defaults to "".
         feModuleType (str): Defaults to "".
@@ -163,8 +163,8 @@ class Channel:
     shortName: str = None
     longName: str = None
     unitsPlainText: str = None
-    isMeasured: int = None
-    isDerived: int = None
+    isMeasured: bool = None
+    isDerived: bool = None
     units: str = None
     label: str = ""
     feModuleType: str = ""
@@ -180,8 +180,8 @@ class Channel:
     def withnewparams(
         self,
         channelID: int,
-        isMeasured: int,
-        isDerived: int,
+        isMeasured: bool,
+        isDerived: bool,
     ) -> Channel:
         tmp = asdict(self)
         tmp["channelID"] = channelID

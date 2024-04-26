@@ -127,7 +127,7 @@ def channelsexistorerror(
 
 
 def appendchannel(
-    self: RSK, channel: Channel, data: npt.NDArray, isMeasured: int, isDerived: int
+    self: RSK, channel: Channel, data: npt.NDArray, isMeasured: bool, isDerived: bool
 ) -> None:
     """Given an instance of :class:`Channel` and data to be populated as a column in
     :param:`RSK.data`, this method will take the channel instance, assign it
