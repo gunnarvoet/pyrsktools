@@ -172,14 +172,22 @@ class Channel:
     # Private undocumented variable to cache the name that would need to be stored back into the DB
     _dbName: str = None
 
-    def withnewid(self, channelID: int) -> Channel:
-        tmp = asdict(self)
-        tmp["channelID"] = channelID
-        return Channel(**tmp)
-
     def withnewname(self, longName: str) -> Channel:
         tmp = asdict(self)
         tmp["longName"] = longName
+        return Channel(**tmp)
+
+    def withnewparams(
+        self,
+        channelID: int,
+        isMeasured: int,
+        isDerived: int,
+    ) -> Channel:
+        tmp = asdict(self)
+        tmp["channelID"] = channelID
+        tmp["isMeasured"] = isMeasured
+        tmp["isDerived"] = isDerived
+
         return Channel(**tmp)
 
 

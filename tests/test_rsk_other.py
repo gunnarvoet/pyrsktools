@@ -48,7 +48,7 @@ class TestOther(unittest.TestCase):
             rsk.readdata()
 
             data = gsw.SA_from_SP(rsk.data["salinity"], rsk.data["sea_pressure"], -150, 49)
-            rsk.addchannel(data, "absolute_salinity", units="g/kg")
+            rsk.addchannel(data, "absolute_salinity", units="g/kg", isMeasured=0, isDerived=1)
             self.assertTrue(
                 any(
                     True
@@ -59,9 +59,16 @@ class TestOther(unittest.TestCase):
             self.assertTrue(np.all(np.equal(rsk.data["absolute_salinity"], data)))
 
             data = np.ones(rsk.data.size)
-            rsk.addchannel(data, "scooby d0o", units="ruhro")
+            rsk.addchannel(data, "scooby d0o", units="ruhro", isMeasured=0, isDerived=1)
             self.assertTrue(
-                any(True for c in rsk.channels if c.longName == "scooby d0o" and c.units == "ruhro")
+                any(
+                    True
+                    for c in rsk.channels
+                    if c.longName == "scooby d0o"
+                    and c.units == "ruhro"
+                    and c.isDerived == 1
+                    and c.isMeasured == 0
+                )
             )
             self.assertTrue(np.all(np.equal(rsk.data["scooby d0o"], data)))
 
