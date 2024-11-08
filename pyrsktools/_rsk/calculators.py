@@ -321,6 +321,10 @@ def deriveBPR(self: RSK) -> None:
 
 def _deriveconcentration(self: RSK, unit: str) -> None:
     validUnits = {"µmol/l", "ml/l", "mg/l"}
+
+    # Normalize the input: replace 'u' with 'µ' and convert to lowercase
+    unit = unit.lower().replace("u", "µ")
+
     if unit not in validUnits:
         raise ValueError(
             f"Invalid unit specified for O2 concentration calculation: {unit}. Expected one of: {', '.join(validUnits)}."
