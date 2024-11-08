@@ -576,8 +576,8 @@ def derivesigma(
           this method will call ``SA = gsw_SA_from_SP(salinity,seapressure,lon,lat)``
         * When latitude and longitude data are absent, this method will call ``SA = gsw_SR_from_SP(salinity)`` assuming that reference
           salinity equals absolute salinity approximately.
-    2. Calculate potential temperature ``pt0 = gsw_pt0_from_t(absolute salinity,temperature,seapressure)``
-    3. Calculate potential density anomaly ``sigma0 = gsw_sigma0_pt0_exact(absolute salinity,potential temperature)``
+    2. Calculate conservative temperature ``pt0 = gsw.CT_from_t(absoluteSalinity, temperature, seaPressure)``
+    3. Calculate conservative density anomaly ``sigma0 = gsw.sigma0(absoluteSalinity, conservativeTemperature)``
 
     .. image:: /img/RSKderivedensityanomaly.png
         :scale: 100%
