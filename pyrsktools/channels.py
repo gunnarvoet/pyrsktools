@@ -125,13 +125,13 @@ DensityAnomaly = Channel(
     _dbName="Density anomaly",
 )
 AbsoluteSalinity = Channel(
-    shortName="cnt_00",  # cnt_00 will need to be updated when Ruskin sets up a shortname for this
+    shortName="sal_02",
     longName="absolute_salinity",
     units="g/kg",
     _dbName="Absolute salinity",
 )
 PotentialTemperature = Channel(
-    shortName="cnt_00",  # cnt_00 will need to be updated when Ruskin sets up a shortname for this
+    shortName="temp49",
     longName="potential_temperature",
     units="°C",
     _dbName="Potential temperature",
