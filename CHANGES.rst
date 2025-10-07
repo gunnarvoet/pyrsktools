@@ -2,6 +2,18 @@
 Changelog
 ##########
 
+Release 1.1.2
+==============================
+
+2025-10-06
+
+* DeriveSA now recognizes latitude and longitude at 0 correctly
+* Fixed a bug where channels' derived status were processed improperly
+* Fixed a bug where the region profile order was calculated incorrectly
+* Fixed a bug where the region profile order was read incorrectly from the RSK file
+* Fixed a bug where the alignchannels encountered an error when lagunit == 'seconds'
+* Fixed a bug where RSK.trim removed incorrect profile indices
+
 Release 1.1.1
 ==============================
 

@@ -111,7 +111,8 @@ def _checkLag(lag: npt.NDArray, castNumber: int, lagunits: str) -> npt.NDArray:
     if not np.equal(np.fix(lag), lag).all() and lagunits == "samples":
         raise ValueError("Lag values must be integers.")
 
-    lag = lag.astype("int64")
+    if lagunits == "samples":
+        lag = lag.astype("int64")
     if lag.size == 1 and castNumber != 1:
         lags = np.full(castNumber, lag[0])
     elif lag.size > 1 and lag.size != castNumber:
@@ -202,34 +203,59 @@ def alignchannel(
         channelData = self.data[channel][indices]
 
         if lagunits == "seconds":
-            timeLag = lags[i]
+            timeLag = float(lags[i])
 
-            timestamps = self.data["timestamp"].astype("float64") / 1000
+            # Use per-profile timestamps and duration
+            timestamps_all = self.data["timestamp"].astype("float64") / 1000
+            timestamps = timestamps_all[indices]
 
-            profileTimeLength = timestamps[-1] - timestamps[0]
-            profileTimeLength = profileTimeLength
-            if timeLag > profileTimeLength:
+            profileTimeLength = float(timestamps[-1] - timestamps[0])
+            if abs(timeLag) > profileTimeLength:
                 raise ValueError("Time lag must be smaller than profile time length.")
 
-            shiftTime = timestamps[indices] + timeLag
-            shiftChan = interp1d(shiftTime, channelData)(timestamps[indices])
+            # Interpolate the shifted signal back onto the original profile timestamps
+            shiftTime = timestamps + timeLag
+            interp_func = interp1d(shiftTime, channelData, bounds_error=False, fill_value=np.nan)
+            shiftChan = interp_func(timestamps)
 
-            if lags[i] > 0:
-                sampleLag = np.flatnonzero(~np.isnan(shiftChan))[0] - 1
-                shiftChan = np.concatenate(shiftChan[sampleLag:-1], shiftChan[0:sampleLag])
+            # Determine leading/trailing NaNs introduced by the shift (in samples)
+            finite_mask = ~np.isnan(shiftChan)
+            if not finite_mask.any():
+                raise ValueError("Time lag too large; no overlap remains after shifting.")
+            first_valid = int(np.argmax(finite_mask))
+            last_valid = int(len(finite_mask) - 1 - np.argmax(finite_mask[::-1]))
+            leading_nans = first_valid
+            trailing_nans = len(finite_mask) - 1 - last_valid
+
+            # Apply shiftfill behavior to edge NaNs for "seconds" path
+            if shiftfill == "zeroorderhold":
+                if leading_nans > 0:
+                    shiftChan[:leading_nans] = shiftChan[first_valid]
+                if trailing_nans > 0:
+                    shiftChan[last_valid + 1 :] = shiftChan[last_valid]
+            elif shiftfill == "mirror":
+                if leading_nans > 0:
+                    mirror_seg = shiftChan[first_valid : first_valid + leading_nans][::-1]
+                    shiftChan[:leading_nans] = mirror_seg
+                if trailing_nans > 0:
+                    mirror_seg = shiftChan[last_valid - trailing_nans + 1 : last_valid + 1][::-1]
+                    shiftChan[last_valid + 1 :] = mirror_seg
+            elif shiftfill == "nan":
+                pass
+            elif shiftfill == "union":
+                pass  # handled below via indices trimming
             else:
-                sampleLag = np.flatnonzero(~np.isnan(shiftChan))[0] - channelData.size
-                shiftChan = np.concatenate(
-                    shiftChan[shiftChan.size + sampleLag : -1],
-                    shiftChan[0 : shiftChan.size + sampleLag],
-                )
+                raise ValueError(f"Invalid value for argument 'shiftfill': {shiftfill}")
+
+            channelShifted = shiftChan
+            # For union calculations, approximate sample trimming from introduced NaNs
+            sampleLag = leading_nans if timeLag > 0 else -trailing_nans
         else:
-            sampleLag = lags[i]
-            if sampleLag > channelData.size:
+            sampleLag = int(lags[i])
+            if abs(sampleLag) > channelData.size:
                 raise ValueError("Sample lag must be smaller than profile sample length.")
             shiftChan = channelData
-
-        channelShifted = utils.shiftarray(shiftChan, sampleLag, shiftfill)
+            channelShifted = utils.shiftarray(shiftChan, sampleLag, shiftfill)
 
         if shiftfill == "union":
             prevIndices = indices

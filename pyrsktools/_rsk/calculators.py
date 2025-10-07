@@ -531,23 +531,49 @@ def _checkLatLong(
     latitude: Optional[Union[float, Collection[float]]],
     longitude: Optional[Union[float, Collection[float]]],
 ) -> None:
-    if hasattr(latitude, "__len__") or hasattr(longitude, "__len__"):
-        if not (hasattr(longitude, "__len__") and hasattr(longitude, "__len__")):
-            raise ValueError("Type of latitude and longitude do not match")
+    """Validate latitude/longitude inputs.
 
-        if len(latitude) != len(data):  # type: ignore
+    Rules:
+    - If either latitude or longitude is a sequence, both must be sequences of equal length and match len(data).
+    - If both are scalars, accept any numeric values including 0.
+    - If one is provided and the other is None, raise a clear error.
+    - If both are None, that's acceptable (coordinates absent).
+    """
+
+    def _is_sequence(x: Any) -> bool:
+        return hasattr(x, "__len__") and not isinstance(x, (str, bytes))
+
+    lat_is_seq = _is_sequence(latitude)
+    lon_is_seq = _is_sequence(longitude)
+
+    # Sequence handling
+    if lat_is_seq or lon_is_seq:
+        if not (lat_is_seq and lon_is_seq):
+            raise ValueError("Type of latitude and longitude do not match")
+        from typing import Sized, cast
+
+        lat_len = len(cast(Sized, latitude))
+        lon_len = len(cast(Sized, longitude))
+        if lat_len != len(data):
             raise ValueError(
-                f"Expected input latitude length ({len(latitude)}) to be the same as RSK.data length ({len(data)})"  # type: ignore
+                f"Expected input latitude length ({lat_len}) to be the same as RSK.data length ({len(data)})"
             )
-        if len(longitude) != len(data):  # type: ignore
+        if lon_len != len(data):
             raise ValueError(
-                f"Expected input longitude length ({len(longitude)}) to be the same as RSK.data length ({len(data)})"  # type: ignore
+                f"Expected input longitude length ({lon_len}) to be the same as RSK.data length ({len(data)})"
             )
-    elif latitude or longitude:
-        if not latitude:
+        return
+
+    # Scalar / None handling
+    lat_missing = latitude is None
+    lon_missing = longitude is None
+    if lat_missing ^ lon_missing:
+        if lat_missing:
             raise ValueError("Missing latitude values")
-        if not longitude:
+        else:
             raise ValueError("Missing longitude values")
+    # Both None or both scalar: accept
+    return
 
 
 def derivesigma(
