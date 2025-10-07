@@ -172,14 +172,22 @@ class Channel:
     # Private undocumented variable to cache the name that would need to be stored back into the DB
     _dbName: str = None
 
-    def withnewid(self, channelID: int) -> Channel:
-        tmp = asdict(self)
-        tmp["channelID"] = channelID
-        return Channel(**tmp)
-
     def withnewname(self, longName: str) -> Channel:
         tmp = asdict(self)
         tmp["longName"] = longName
+        return Channel(**tmp)
+
+    def withnewparams(
+        self,
+        channelID: int,
+        isMeasured: int,
+        isDerived: int,
+    ) -> Channel:
+        tmp = asdict(self)
+        tmp["channelID"] = channelID
+        tmp["isMeasured"] = isMeasured
+        tmp["isDerived"] = isDerived
+
         return Channel(**tmp)
 
 
@@ -548,7 +556,9 @@ class Region:
         if not isinstance(other, Region):
             return NotImplemented
 
-        return bool(self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2)
+        return bool(
+            self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2
+        )  # and self.type == other.type)
 
     def __ne__(self: Region, other: object) -> bool:
         if not isinstance(other, Region):
@@ -563,6 +573,7 @@ class Region:
         return bool(
             (self.tstamp1 > other.tstamp1 and self.tstamp2 > other.tstamp2)
             or (self.tstamp1 <= other.tstamp1 and self.tstamp2 >= other.tstamp2)
+            # or (self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2 and self.type > other.type)
         )
 
     def __lt__(self: Region, other: object) -> bool:
@@ -572,6 +583,7 @@ class Region:
         return bool(
             (self.tstamp1 < other.tstamp1 and self.tstamp2 < other.tstamp2)
             or (self.tstamp1 >= other.tstamp1 and self.tstamp2 <= other.tstamp2)
+            # or (self.tstamp1 == other.tstamp1 and self.tstamp2 == other.tstamp2 and self.type < other.type)
         )
 
 
@@ -589,6 +601,12 @@ class RegionCast(Region):
 
     def __str__(self: RegionCast) -> str:
         return f"{self.regionType}{self.type} [{self.tstamp1}, {self.tstamp2}]"
+
+    def isdowncast(self: RegionCast) -> bool:
+        return True if self.regionType == "DOWN" else False
+
+    def isupcast(self: RegionCast) -> bool:
+        return True if self.regionType == "UP" else False
 
 
 @dataclass(frozen=True)

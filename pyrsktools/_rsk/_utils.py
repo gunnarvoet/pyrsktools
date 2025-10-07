@@ -40,10 +40,10 @@ def getprofilesorerror(
     """Get profile regions.
 
     Args:
-        profiles (Union[int, Collection[int]], optional): _description_. Defaults to [].
+        profiles (Union[int, Collection[int]], optional): the profile(s) to select. Defaults to [] (all profiles).
 
     Returns:
-        List[Tuple[RegionCast, RegionCast, RegionProfile]]: tuple of (RegionCast<DOWNCAST>,  RegionCast<UPCAST>, RegionProfile)
+        List[Tuple[RegionCast, RegionCast, RegionProfile]]: tuple of (RegionCast,  RegionCast, RegionProfile)
 
     Get relevant profile regions (e.g., those from RSK.regions), returning a list of tuples. Each tuple
     contains the regions relating to each profile. Tries to get all profiles if profiles is []. If no
@@ -58,18 +58,19 @@ def getprofilesorerror(
     # Turn profiles into a set (potentially empty) for consistency
     profiles = set(profiles) if hasattr(profiles, "__iter__") else {profiles}  # type: ignore
     # We assume RSK.regions is always a sorted immutable tuple.
-    # From `attributes.informational.Region`, we know sorting will always result in
+    # From `Region`, we know sorting will always result in
     # each RegionProfile coming after both of its related RegionCasts
     # (because they have a larger tstamp2). The order will be:
-    # (RegionCast<DOWNCAST>,  RegionCast<UPCAST>, RegionProfile)
+    # (RegionCast, RegionCast, RegionProfile)
     for region in self.regions:
         if isinstance(region, RegionCast):
-            if region.regionType == "DOWN":
+            if region.isdowncast():
                 downRegion = region
-            elif region.regionType == "UP":
+            elif region.isupcast():
                 upRegion = region
         elif isinstance(region, RegionProfile):
-            if not downRegion or not upRegion:
+            # if not downRegion or not upRegion: # here requires both upcast and downcast in one profile
+            if not downRegion and not upRegion:  # this allows one cast exist under one profile
                 raise ValueError("Failed to get profiles due to missing cast region(s)")
             if profileRegion:
                 raise ValueError("Failed to get profiles due to extraneous profile region")
@@ -78,7 +79,18 @@ def getprofilesorerror(
             # If they passed in profile indices and our current index is in there, get it.
             if not profiles or profileIndex in profiles:
                 profileRegion = region
-                profileRegions.append((downRegion, upRegion, profileRegion))
+                # allow single cast appended
+                if downRegion and upRegion:
+                    # append the cast in the order of time
+                    profileRegions.append(
+                        (downRegion, upRegion, profileRegion)
+                    ) if downRegion.tstamp2 < upRegion.tstamp2 else profileRegions.append(
+                        (upRegion, downRegion, profileRegion)
+                    )
+                else:
+                    profileRegions.append(
+                        (downRegion, upRegion, profileRegion)
+                    )  # either downRegion or upRegion is None
 
             downRegion, upRegion, profileRegion = None, None, None
             profileIndex += 1
@@ -114,7 +126,9 @@ def channelsexistorerror(
             raise ValueError(f'Data does not contain required channel: "{channelName}"')
 
 
-def appendchannel(self: RSK, channel: Channel, data: npt.NDArray) -> None:
+def appendchannel(
+    self: RSK, channel: Channel, data: npt.NDArray, isMeasured: int, isDerived: int
+) -> None:
     """Given an instance of :class:`Channel` and data to be populated as a column in
     :param:`RSK.data`, this method will take the channel instance, assign it
     an appropriate channelID, append the channel to :param:`RSK.channels`,
@@ -132,7 +146,11 @@ def appendchannel(self: RSK, channel: Channel, data: npt.NDArray) -> None:
             self.data, channel.longName, data, "float64", fill_value=np.nan, usemask=False
         )
         self.channels.append(
-            channel.withnewid(max(self.channels, key=lambda ch: ch.channelID).channelID + 1)
+            channel.withnewparams(
+                channelID=max(self.channels, key=lambda ch: ch.channelID).channelID + 1,
+                isMeasured=isMeasured,
+                isDerived=isDerived,
+            )
         )
 
 

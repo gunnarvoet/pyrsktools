@@ -22,6 +22,8 @@ To instantiate and open an RSK file, there are two approaches (see `pyRSKtools g
 
 .. code-block:: python
 
+    from pyrsktools import RSK
+    
     with RSK("/path/to/data.rsk") as rsk:
         # Print a list of all the channels in the RSK file
         rsk.printchannels()

@@ -13,7 +13,7 @@ setup(
     version=version,
     packages=find_packages(exclude=["env", "contrib", "docs", "tests"]),
     python_requires=">=3.8.0",
-    install_requires=["numpy", "scipy", "gsw", "matplotlib", "cmocean"],
+    install_requires=["numpy>=1.21.0,<=1.26.4", "scipy", "gsw", "matplotlib", "cmocean"],
     extras_require={
         "dev": ["build", "twine", "black", "mypy", "sphinx", "sphinx-toolbox", "sphinx-paramlinks"],
     },

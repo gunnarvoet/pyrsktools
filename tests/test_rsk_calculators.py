@@ -11,7 +11,7 @@ import numpy as np
 from pyrsktools import RSK, utils
 from pyrsktools.channels import *
 from pyrsktools.datatypes import *
-from common import RSK_FILES, MATLAB_RSK, MATLAB_DATA_DIR, BPR_RSK, APT_CERVELLO_RSK
+from common import RSK_FILES, MATLAB_RSK, MATLAB_DATA_DIR, BPR_RSK, APT_CERVELLO_RSK, RSK_FILES_BPR
 from common import CSV_FILES, GOLDEN_CSV
 from common import readMatlabFile, readMatlabChannelDataByName
 
@@ -56,18 +56,24 @@ class TestCalculators(unittest.TestCase):
                     hasGiven = True
 
                     # Filter out the values out of PSS-78 range in the test: https://salinometry.com/pss-78/
-                    # In GSW, if the PSS-78 algorithm produces a Practical Salinity that is less than 2 
-                    # then the Practical Salinity is recalculated with a modified form of the Hill et al. (1986) formula.  
+                    # In GSW, if the PSS-78 algorithm produces a Practical Salinity that is less than 2
+                    # then the Practical Salinity is recalculated with a modified form of the Hill et al. (1986) formula.
                     # The modification of the Hill et al. (1986) expression is to ensure that it is exactly consistent with PSS-78 at SP = 2.
                     #  Practical salinity: 2 to 42
-                    given[(given < 2) | (given > 42)]= np.nan
-                    rsk.data[channelName][(rsk.data[channelName] < 2) | (rsk.data[channelName] > 42)]=np.nan
+                    given[(given < 2) | (given > 42)] = np.nan
+                    rsk.data[channelName][
+                        (rsk.data[channelName] < 2) | (rsk.data[channelName] > 42)
+                    ] = np.nan
                     #  Sea pressure: 0 to 10000 dbar
-                    given[(given_sp < 0) | (given_sp > 10000)]= np.nan
-                    rsk.data[channelName][(rsk.data["sea_pressure"] < 0) | (rsk.data["sea_pressure"] > 10000)] = np.nan
+                    given[(given_sp < 0) | (given_sp > 10000)] = np.nan
+                    rsk.data[channelName][
+                        (rsk.data["sea_pressure"] < 0) | (rsk.data["sea_pressure"] > 10000)
+                    ] = np.nan
                     #  Temperature: -2 to 35 degree C
                     given[(given_t < -2) | (given_t > 35)] = np.nan
-                    rsk.data[channelName][(rsk.data["temperature"] < -2) | (rsk.data["temperature"] > 35)] = np.nan
+                    rsk.data[channelName][
+                        (rsk.data["temperature"] < -2) | (rsk.data["temperature"] > 35)
+                    ] = np.nan
 
                 rsk.derivesalinity()  # Overwrites salinity
                 self.assertTrue(rsk.channelexists(channelName))
@@ -80,7 +86,7 @@ class TestCalculators(unittest.TestCase):
                         | np.isnan(rsk.data[channelName])
                         | np.ma.getmask(rsk.data[channelName])
                     )
-                    #If had given, check we are "close" to the given
+                    # If had given, check we are "close" to the given
                     self.assertTrue(
                         np.allclose(given[mask], rsk.data[channelName][mask], atol=1e-03)
                     )
@@ -368,6 +374,14 @@ class TestCalculators(unittest.TestCase):
                 # self.assertTrue(np.allclose(mData,rsk.data[pyChannels[i]], atol = 1e-07, equal_nan =True))
                 self.assertTrue(np.equal(mData, rsk.data[pyChannels[i]]).all())
                 print("pass: ", pyChannels[i])
+
+        # test different versions of quartzQ with different channel shortNames
+        for f in RSK_FILES_BPR:
+            with RSK(f.as_posix()) as rsk:
+                rsk.readdata()
+                rsk.deriveBPR()
+                self.assertIn("bpr_pressure", rsk.channelNames)
+                self.assertIn("bpr_temperature", rsk.channelNames)
 
     def test_deriveO2(self):
         validDerives = {"concentration", "saturation"}
@@ -838,7 +852,6 @@ class TestCalculators(unittest.TestCase):
                     self.assertTrue(any(ch.longName == channelName for ch in rsk.channels))
 
     def test_deriveA0A(self):
-
         with RSK(BPR_RSK.as_posix()) as rsk:
             rsk.readdata()
             rsk.deriveBPR()

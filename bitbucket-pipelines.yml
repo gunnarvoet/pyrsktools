@@ -1,31 +1,78 @@
-image: python:3.8.0
+image: python:3.8.20
 
 definitions:
     steps:
+        - pip install --upgrade pip
         - step: &formatCheck
-            name: Format check
-            caches:
-                - pip
-            script:
-                - pip install black
-                - make format-check
+              name: Format check
+              caches:
+                  - pip
+              script:
+                  - pip install black==22.10.0
+                  - make format-check
         - step: &typeCheck
-            name: Type check
-            caches:
-                - pip
-            script:
-                - pip install .
-                - pip install mypy==0.982
-                - make type-check
-        - step: &unitTest
-            name: Unit test
-            caches:
-                - pip
-                - rsks
-            script:
-                - apt -y update && apt install -y git-lfs
-                - pip install .
-                - make test
+              name: Type check
+              caches:
+                  - pip
+              script:
+                  - pip install .
+                  - pip install mypy==0.982
+                  - make type-check
+        - step: &unitTest3.8
+              image: python:3.8.20
+              name: Unit test 3.8
+              caches:
+                  - pip
+                  - rsks
+              script:
+                  - apt -y update && apt install -y git-lfs
+                  - pip install .
+                  - python --version
+                  - make test
+        - step: &unitTest3.9
+              image: python:3.9.20
+              name: Unit test 3.9
+              caches:
+                  - pip
+                  - rsks
+              script:
+                  - apt -y update && apt install -y git-lfs
+                  - pip install .
+                  - python --version
+                  - make test
+        - step: &unitTest3.10
+              image: python:3.10.15
+              name: Unit test 3.10
+              caches:
+                  - pip
+                  - rsks
+              script:
+                  - apt -y update && apt install -y git-lfs
+                  - pip install .
+                  - python --version
+                  - make test 
+        - step: &unitTest3.11
+              image: python:3.11.10
+              name: Unit test 3.11
+              caches:
+                  - pip
+                  - rsks
+              script:
+                  - apt -y update && apt install -y git-lfs
+                  - pip install .
+                  - python --version
+                  - make test              
+        - step: &unitTest3.12
+              image: python:3.12.7
+              name: Unit test 3.12
+              caches:
+                  - pip
+                  - rsks
+              script:
+                  - apt -y update && apt install -y git-lfs
+                  - pip install .
+                  - python --version
+                  - make test        
     caches:
         rsks: tests/rsks/
 
@@ -33,12 +80,20 @@ pipelines:
     branches:
         master:
             - parallel:
-                - step: *formatCheck
-                - step: *typeCheck
-                - step: *unitTest
+                  - step: *formatCheck
+                  - step: *typeCheck
+                  - step: *unitTest3.8
+                  - step: *unitTest3.9
+                  - step: *unitTest3.10
+                  - step: *unitTest3.11
+                  - step: *unitTest3.12
     pull-requests:
-        '**':
+        "**":
             - parallel:
-                - step: *formatCheck
-                - step: *typeCheck
-                - step: *unitTest
+                  - step: *formatCheck
+                  - step: *typeCheck
+                  - step: *unitTest3.8
+                  - step: *unitTest3.9
+                  - step: *unitTest3.10
+                  - step: *unitTest3.11
+                  - step: *unitTest3.12

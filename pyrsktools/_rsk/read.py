@@ -7,6 +7,7 @@ import os
 import sqlite3
 import csv
 import numpy as np
+import numpy.ma as ma
 import numpy.typing as npt
 import sys
 from enum import IntEnum
@@ -82,16 +83,23 @@ def open(self: RSK) -> None:
 
             isStored = False if channelStatus[channel.channelID] & 0x04 else True
             isHidden = True if channelStatus[channel.channelID] & 0x01 else False
+            isStreamed = False if channelStatus[channel.channelID] & 0x08 else True
 
             if self._readHiddenChannels:
                 if not isBPR and not isStored:
                     toDelete.append(channel.channelID)
+                else:
+                    if not isStreamed and not isStored:  # e.g., status == 12
+                        toDelete.append(channel.channelID)
             else:
                 if not isStored or isHidden:
                     toDelete.append(channel.channelID)
 
         if len(toDelete) > 0:
             self.channels = [c for c in self.channels if c.channelID not in toDelete]
+            self.instrumentChannels = [
+                c for c in self.instrumentChannels if c.channelID not in toDelete
+            ]
 
     self.appendlog(f"{self.filename} opened using pyRSKtools v{self.version}.")
 
@@ -160,6 +168,11 @@ def _detectprofiles(
     pressureThreshold: float = 3.0,
     conductivityThreshold: float = 0.05,
 ) -> npt.NDArray:
+    indx = ~(np.isnan(pressure) | np.isnan(conductivity))
+    pressure = pressure[indx]
+    conductivity = conductivity[indx]
+    timestamp = timestamp[indx]
+
     pressureThreshold = float(pressureThreshold)
     conductivityThreshold = float(conductivityThreshold)
     # Event profiles. Timestamp and event index describing the start of the event
@@ -515,31 +528,33 @@ def getprofilesindices(
 
     # The way the profiles are selected below is a bit odd, sorry.
     # The above profileRegions retrieved above is a tuple of
-    # (DowncastRegion, UpcastRegion, ProfileRegion), each of
+    # (RegionCast, RegionCast, RegionProfile), each of
     # which have tstamp1 and tstamp2 marking their start and end
     # respectively. However, when the user specifies "both" we
-    # get into a weird case where the last point of the downcast
-    # and the first point of the upcast are the same (and we want to
-    # count them both). So, for "both" we use the downcast and upcast
+    # get into a weird case where the last point of the first cast
+    # and the first point of the second cast are the same (and we want to
+    # count them both). So, for "both" we use the individual cast
     # regions instead of the profile region to make sure we double count.
     # Below I just encode the direction into an int so it might be
     # quicker to compare later.
     if direction == "down":
-        regionIndex = 0
+        regionIndex = 0 if profileRegions[0][0].isdowncast() else 1
     elif direction == "up":
-        regionIndex = 1
+        regionIndex = 1 if profileRegions[0][1].isupcast() else 0
     else:
         regionIndex = 2
 
     # Here we get the actual profile indices (accounting for double
     # counted points when direction is "both")
     profileDataIndices = []
-    for p in profileRegions:
+    for p in profileRegions[:-1]:
         if regionIndex == 2:
+            # No matter downcast comes first or upcast, the cast with smaller tstamp1 should be listed first
+            firstCast, secondCast = [0, 1] if p[0].tstamp1 < p[1].tstamp1 else [1, 0]
             indices = np.flatnonzero(
                 np.logical_and(
-                    self.data["timestamp"] >= p[0].tstamp1,
-                    self.data["timestamp"] <= p[0].tstamp2,
+                    self.data["timestamp"] >= p[firstCast].tstamp1,
+                    self.data["timestamp"] <= p[firstCast].tstamp2,
                 )
             )
             indices = np.concatenate(
@@ -547,8 +562,56 @@ def getprofilesindices(
                     indices,
                     np.flatnonzero(
                         np.logical_and(
-                            self.data["timestamp"] >= p[1].tstamp1,
-                            self.data["timestamp"] <= p[1].tstamp2,
+                            self.data["timestamp"] >= p[secondCast].tstamp1,
+                            self.data["timestamp"] <= p[secondCast].tstamp2,
+                        )
+                    ),
+                )
+            )
+        else:
+            indices = np.flatnonzero(
+                np.logical_and(
+                    self.data["timestamp"] >= p[regionIndex].tstamp1,
+                    self.data["timestamp"] <= p[regionIndex].tstamp2,
+                )
+            )
+
+        profileDataIndices.append(indices.tolist())
+
+    # deal with the last profile separately, it could contain a pair of casts or single cast
+    p = profileRegions[-1]
+    if None in p:  # unequal number of up and downcast
+        p = list(p)
+        p.remove(None)
+        if (
+            (regionIndex == 2)
+            or (profileRegions[0][0].isdowncast() and direction == "down")
+            or (profileRegions[0][0].isupcast() and direction == "up")
+        ):
+            indices = np.flatnonzero(
+                np.logical_and(
+                    self.data["timestamp"] >= p[0].tstamp1,
+                    self.data["timestamp"] <= p[0].tstamp2,
+                )
+            )
+            profileDataIndices.append(indices.tolist())
+    else:  # paired casts
+        if regionIndex == 2:
+            # No matter downcast comes first or upcast, the cast with smaller tstamp1 should be listed first
+            firstCast, secondCast = [0, 1] if p[0].tstamp1 < p[1].tstamp1 else [1, 0]
+            indices = np.flatnonzero(
+                np.logical_and(
+                    self.data["timestamp"] >= p[firstCast].tstamp1,
+                    self.data["timestamp"] <= p[firstCast].tstamp2,
+                )
+            )
+            indices = np.concatenate(
+                (
+                    indices,
+                    np.flatnonzero(
+                        np.logical_and(
+                            self.data["timestamp"] >= p[secondCast].tstamp1,
+                            self.data["timestamp"] <= p[secondCast].tstamp2,
                         )
                     ),
                 )
@@ -564,6 +627,60 @@ def getprofilesindices(
         profileDataIndices.append(indices.tolist())
 
     return profileDataIndices
+
+
+def getprofilesindicessortedbycast(
+    self: RSK, profiles: Union[int, Collection[int]] = [], direction: str = "both"
+) -> List[List[int]]:
+    """Get a list of indices for each cast direction used to index into :obj:`RSK.data`.
+
+    Args:
+        profiles (Union[int, Collection[int]], optional): profile number(s) to select. Defaults to [] (all profiles).
+        direction (str, optional): cast direction of either "up", "down", or "both". Defaults to "both".
+
+    Returns:
+        List[List[int]]: a list of cast indices; each element in the returned list is a list
+        itself which may be used to index into :obj:`RSK.data`.
+
+    This method quickly computes a list (of lists) of indices into :obj:`RSK.data` for each profile/cast
+    using the metadata in :obj:`RSK.regions`.
+
+    Example:
+
+    >>> allcastIndices = rsk.getprofilesindicessortedbycast()
+    """
+    if profiles is None:
+        raise TypeError("Type of 'None' invalid. Use an empty list ([]) to select all profiles.")
+
+    if not self.regions:
+        raise ValueError(
+            "No profile regions in the current RSK instance. Please see rsk.computeprofiles()."
+        )
+
+    if self.data.size == 0:
+        raise ValueError("No data in the current RSK instance")
+
+    profileRegions = self.getprofilesorerror(profiles)
+    if direction == "both":
+        up = self.getprofilesindices(profiles, "up")
+        down = self.getprofilesindices(profiles, "down")
+        indices_bycasts = []
+
+        for i in range(min(len(up), len(down))):
+            if profileRegions[0][0].isdowncast():
+                indices_bycasts.append(down[i])
+                indices_bycasts.append(up[i])
+            else:
+                indices_bycasts.append(up[i])
+                indices_bycasts.append(down[i])
+
+        if len(up) != len(down):
+            lastprofile: list = up[-1] if len(up) > len(down) else down[-1]
+            indices_bycasts.append(lastprofile)
+    else:
+        indices_bycasts = self.getprofilesindices(profiles, direction)
+
+    return indices_bycasts
 
 
 def getdataseriesindices(self: RSK) -> List[List[int]]:
