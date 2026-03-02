@@ -1085,7 +1085,7 @@ def correctTM(
     profiles: Optional[Union[int, Collection[int]]] = [],
     direction: str = "both",
 ) -> None:
-    """Apply a thermal mass correction to conductivity using the model of Lueck and Picklo (1990).
+    r"""Apply a thermal mass correction to conductivity using the model of Lueck and Picklo (1990).
 
      Args:
         alpha (float):  volume-weighted magnitude of the initial fluid thermal anomaly.
@@ -1165,7 +1165,7 @@ def correcttau(
     profiles: Optional[Union[int, Collection[int]]] = [],
     direction: str = "both",
 ) -> None:
-    """Apply tau correction and smoothing (optional) algorithm from Fozdar et al. (1985).
+    r"""Apply tau correction and smoothing (optional) algorithm from Fozdar et al. (1985).
 
     Args:
         channel (str): longName of channel to apply tau correction (e.g., "Temperature", "Dissolved O2").
